@@ -1,0 +1,5 @@
+bin
+obj
+.vs
+App.config
+References

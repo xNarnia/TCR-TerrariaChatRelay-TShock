@@ -1,0 +1,3 @@
+author = Panini
+version = 0.1
+displayName = DCR-DiscordChatRelay
