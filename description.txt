@@ -1,1 +1,1 @@
-Chat Relay for multiple services, such as Discord
+Chat Relay for multiple services. Current support: Discord
