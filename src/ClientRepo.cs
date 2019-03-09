@@ -10,7 +10,7 @@ namespace TerrariaChatRelay
     public class ClientRepo
     {
         /// <summary>
-        /// List for IChatClients to add themselves too for tracking.
+        /// IChatClients list for clients to register with.
         /// </summary>
         public static List<IChatClient> Clients { get; set; }
     }
