@@ -7,6 +7,8 @@ using Terraria;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using TerrariaChatRelay.Clients;
+using On.Terraria.GameContent.NetModules;
+using Terraria.Chat;
 
 namespace TerrariaChatRelay
 {
@@ -21,28 +23,26 @@ namespace TerrariaChatRelay
         {
             base.Load();
 
-            EventManager.Subscribers = new List<Clients.Interfaces.IChatClient>();
+            // Intercept DeserializeAsServer method
+            NetTextModule.DeserializeAsServer += NetTextModule_DeserializeAsServer;
 
+            // Add subscribers to list
+            EventManager.Subscribers = new List<Clients.Interfaces.IChatClient>();
             EventManager.Subscribers.Add(
                 new TestChatClient(EventManager.Subscribers));
         }
 
-        public override bool HijackGetData(ref byte messageType, ref BinaryReader reader, int playerNumber)
+        // Override text receive method from server
+        private bool NetTextModule_DeserializeAsServer(NetTextModule.orig_DeserializeAsServer orig, Terraria.GameContent.NetModules.NetTextModule self, BinaryReader reader, int senderPlayerId)
         {
-            // Chat Message    [25]
-            // Chat Message v2 [107]
-            // 82 packet is used when sending message?
+            ChatMessage message = ChatMessage.Deserialize(reader);
 
-            Main.NewText(messageType);
-            // Test Code
-            if (messageType == 25 || messageType == 107)
-            {
-                byte PlayerId = reader.ReadByte();
-                Color color = reader.ReadRGB();
-                string msg = reader.ReadString();
+            EventManager.RaiseTerrariaMessageReceived(this, senderPlayerId, Color.White, message.Text);
 
-                EventManager.RaiseTerrariaMessageReceived(this, PlayerId, color, msg);
-            }
+            // Mimic original chat format since we're overriding the message
+            NetMessage.BroadcastChatMessage(
+                NetworkText.FromLiteral(
+                    "<" + Main.player[senderPlayerId].name + "> " + message.Text), Color.White, -1);
 
             return false;
         }

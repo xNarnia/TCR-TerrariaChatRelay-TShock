@@ -1,3 +1,5 @@
 author = Panini
 version = 0.1
 displayName = TCR-TerrariaChatRelay
+modReferences = TerrariaHooks
+side = Server

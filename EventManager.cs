@@ -21,7 +21,7 @@ namespace TerrariaChatRelay
         public static event EventHandler<TerrariaChatEventArgs> OnGameMessageSent;
 
 
-        public static void RaiseTerrariaMessageReceived(object sender, byte playerId, Color color, string msg)
+        public static void RaiseTerrariaMessageReceived(object sender, int playerId, Color color, string msg)
         {
             OnGameMessageReceived(sender, new TerrariaChatEventArgs(playerId, color, msg));
         }
@@ -29,11 +29,11 @@ namespace TerrariaChatRelay
 
     public class TerrariaChatEventArgs : EventArgs
     {
-        public byte PlayerId { get; set; }
+        public int PlayerId { get; set; }
         public Color Color { get; set; }
         public string Message { get; set; }
 
-        public TerrariaChatEventArgs(byte playerId, Color color, string msg)
+        public TerrariaChatEventArgs(int playerId, Color color, string msg)
         {
             PlayerId = playerId;
             Color = color;

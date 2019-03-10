@@ -7,7 +7,7 @@ using TerrariaChatRelay.Clients.Interfaces;
 
 namespace TerrariaChatRelay.Clients
 {
-    public class DiscordChatClient : BaseClient, IHandlesEmotes, IHandlesAttachments
+    public class DiscordChatClient : BaseClient
     {
         private List<IChatClient> _parent { get; set; }
 
@@ -16,32 +16,22 @@ namespace TerrariaChatRelay.Clients
 
         public override void Connect()
         {
-            throw new NotImplementedException();
+
         }
 
         public override void Disconnect()
         {
-            throw new NotImplementedException();
-        }
 
-        public string HandleEmotes(object obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string HandleAttachment(object obj)
-        {
-            throw new NotImplementedException();
         }
 
         public override void GameMessageReceived_Handler(object sender, TerrariaChatEventArgs msg)
         {
-            throw new NotImplementedException();
+
         }
 
         public override void GameMessageSent_Handler(object sender, TerrariaChatEventArgs msg)
         {
-            throw new NotImplementedException();
+
         }
     }
 }

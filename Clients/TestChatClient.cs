@@ -12,7 +12,7 @@ namespace TerrariaChatRelay.Clients
 {
     public class TestChatClient : BaseClient
     {
-        public TestChatClient(List<IChatClient> parent) : base(parent) { EventManager.OnGameMessageReceived += GameMessageReceived_Handler; }
+        public TestChatClient(List<IChatClient> parent) : base(parent) { }
 
         public override void Connect()
         {
@@ -24,15 +24,14 @@ namespace TerrariaChatRelay.Clients
 
         }
 
-        public override void GameMessageReceived_Handler(object sender, TerrariaChatEventArgs msg)
+        public override void GameMessageReceived_Handler(object sender, TerrariaChatEventArgs e)
         {
-            NetMessage.BroadcastChatMessage(NetworkText.FromLiteral(msg + " It worked!"), Color.Cyan, -1);
-            throw new NotImplementedException();
+            NetMessage.BroadcastChatMessage(NetworkText.FromLiteral(e.Message + " - It worked!"), Color.Cyan, -1);
         }
 
         public override void GameMessageSent_Handler(object sender, TerrariaChatEventArgs msg)
         {
-            throw new NotImplementedException();
+
         }
     }
 }
