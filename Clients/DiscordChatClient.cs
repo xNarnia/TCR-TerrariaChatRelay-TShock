@@ -5,12 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using TerrariaChatRelay.Clients.Interfaces;
 
-namespace TerrariaChatRelay.Clients.Discord
+namespace TerrariaChatRelay.Clients
 {
     public class DiscordChatClient : BaseClient, IHandlesEmotes, IHandlesAttachments
     {
-        public event Func<string, Task> MessageReceived;
-        public event Func<string, Task> MessageSent;
         private List<IChatClient> _parent { get; set; }
 
         public DiscordChatClient(List<IChatClient> _parent) 
@@ -36,7 +34,12 @@ namespace TerrariaChatRelay.Clients.Discord
             throw new NotImplementedException();
         }
 
-        private Task DiscordChatClient_MessageReceived(string arg)
+        public override void GameMessageReceived_Handler(object sender, TerrariaChatEventArgs msg)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void GameMessageSent_Handler(object sender, TerrariaChatEventArgs msg)
         {
             throw new NotImplementedException();
         }

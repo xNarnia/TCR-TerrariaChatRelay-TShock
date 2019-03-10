@@ -9,15 +9,6 @@ namespace TerrariaChatRelay.Clients.Interfaces
     public interface IChatClient
     {
         /// <summary>
-        /// Event fired when MessageReceived from service.
-        /// </summary>
-        event Func<string, Task> MessageReceived;
-        /// <summary>
-        /// Event fired when MessageSent from Terraria.
-        /// </summary>
-        event Func<string, Task> MessageSent;
-
-        /// <summary>
         /// Initialize client to parent repo.
         /// </summary>
         /// <param name="parent">Parent repo to register with.</param>
@@ -37,5 +28,23 @@ namespace TerrariaChatRelay.Clients.Interfaces
         /// Terminate connection to service.
         /// </summary>
         void Disconnect();
+
+        ///// <summary>
+        ///// Handler fired when server receives a message from service.
+        ///// </summary>
+        //Task ClientMessageReceived_Handler(string msg);
+        ///// <summary>
+        ///// Handler fired when server sends a message to service.
+        ///// </summary>
+        //Task ClientMessageSent_Handler(string msg);
+        ///// <summary>
+        ///// Handler fired when server receives a message from the game.
+        ///// </summary>
+        void GameMessageReceived_Handler(object sender, TerrariaChatEventArgs msg);
+        ///// <summary>
+        ///// Handler fired when server sends a message to the game.
+        ///// </summary>
+        void GameMessageSent_Handler(object sender, TerrariaChatEventArgs msg);
+
     }
 }

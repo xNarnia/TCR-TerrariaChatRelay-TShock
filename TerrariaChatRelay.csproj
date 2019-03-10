@@ -33,13 +33,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ClientRepo.cs" />
+    <Compile Include="EventManager.cs" />
     <Compile Include="Clients\BaseClient.cs" />
-    <Compile Include="Clients\Discord\DiscordChatClient.cs" />
-    <Compile Include="Clients\Discord\DiscordConnector.cs" />
+    <Compile Include="Clients\DiscordChatClient.cs" />
     <Compile Include="Clients\Interfaces\IHandlesAttachments.cs" />
     <Compile Include="Clients\Interfaces\IHandlesEmotes.cs" />
     <Compile Include="Clients\Interfaces\IChatClient.cs" />
+    <Compile Include="Clients\TestChatClient.cs" />
     <Compile Include="TerrariaChatRelay.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -9,8 +9,6 @@ namespace TerrariaChatRelay.Clients
 {
     public abstract class BaseClient : IChatClient
     {
-        public event Func<string, Task> MessageReceived;
-        public event Func<string, Task> MessageSent;
         private List<IChatClient> _parent;
 
         /// <summary>
@@ -18,13 +16,17 @@ namespace TerrariaChatRelay.Clients
         /// </summary>
         /// <param name="parent"></param>
         public BaseClient(List<IChatClient> parent)
-            => Init(parent);
+        {
+            Init(parent);
+        }
 
         /// <summary>
         /// Handle disposing of client.
         /// </summary>
         ~BaseClient()
-            => Dispose();
+        {
+            Dispose();
+        }
 
         /// <summary>
         /// Registers self to ClientRepo
@@ -34,6 +36,11 @@ namespace TerrariaChatRelay.Clients
         {
             _parent = parent;
             _parent.Add(this);
+
+            //EventManager.OnClientMessageReceived += ClientMessageReceived_Handler;
+            //EventManager.OnClientMessageSent += ClientMessageSent_Handler;
+            EventManager.OnGameMessageReceived += GameMessageReceived_Handler;
+            EventManager.OnGameMessageSent += GameMessageSent_Handler;
         }
 
         /// <summary>
@@ -42,11 +49,17 @@ namespace TerrariaChatRelay.Clients
         public void Dispose()
         {
             _parent.Remove(this);
-            MessageReceived = null;
-            MessageSent = null;
+            EventManager.OnGameMessageReceived -= GameMessageReceived_Handler;
+            EventManager.OnGameMessageSent -= GameMessageSent_Handler;
         }
 
         public abstract void Connect();
         public abstract void Disconnect();
+
+        // Events
+        //public abstract Task ClientMessageReceived_Handler(string msg);
+        //public abstract Task ClientMessageSent_Handler(string msg);
+        public abstract void GameMessageReceived_Handler(object sender, TerrariaChatEventArgs msg);
+        public abstract void GameMessageSent_Handler(object sender, TerrariaChatEventArgs msg);
     }
 }
