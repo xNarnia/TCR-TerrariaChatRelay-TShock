@@ -70,9 +70,6 @@
       <HintPath>lib\TerrariaHooks.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>"C:\Program Files (x86)\Steam\steamapps\common\terraria\tModLoaderServer.exe" -build "$(ProjectDir)\" -eac "$(TargetPath)"</PostBuildEvent>
