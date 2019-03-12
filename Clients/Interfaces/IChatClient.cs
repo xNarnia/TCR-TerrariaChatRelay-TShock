@@ -18,16 +18,16 @@ namespace TerrariaChatRelay.Clients.Interfaces
         /// Handle cleanup, de-register, and dispose client.
         /// </summary>
         void Dispose();
-        
+
         /// <summary>
         /// Initiate connection to service.
         /// </summary>
-        void Connect();
+        Task ConnectAsync();
 
         /// <summary>
         /// Terminate connection to service.
         /// </summary>
-        void Disconnect();
+        Task DisconnectAsync();
 
         ///// <summary>
         ///// Handler fired when server receives a message from service.

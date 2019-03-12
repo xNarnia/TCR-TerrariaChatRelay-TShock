@@ -1,5 +1,6 @@
 author = Panini
 version = 0.1
 displayName = TCR-TerrariaChatRelay
+dllReferences = System.Net.Http
 modReferences = TerrariaHooks
 side = Server

@@ -28,8 +28,14 @@ namespace TerrariaChatRelay
 
             // Add subscribers to list
             EventManager.Subscribers = new List<Clients.Interfaces.IChatClient>();
-            EventManager.Subscribers.Add(
-                new TestChatClient(EventManager.Subscribers));
+
+            var discord = new MessyTestDiscordChatClient(EventManager.Subscribers);
+
+            EventManager.Subscribers.Add(new TestChatClient(EventManager.Subscribers));
+            EventManager.Subscribers.Add(discord);
+
+            // Test Connect method specifically
+            discord.ConnectAsync();
         }
 
         // Override text receive method from server

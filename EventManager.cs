@@ -15,15 +15,20 @@ namespace TerrariaChatRelay
         /// </summary>
         public static List<IChatClient> Subscribers { get; set; }
 
-        //public static event EventHandler<TerrariaChatEventArgs> OnServiceMessageReceived;
-        //public static event EventHandler<TerrariaChatEventArgs> OnServiceMessageSent;
+        // Implement these once mod can successfully send messages to Discord
+        //public static event EventHandler<ServiceChatEventArgs> OnServiceMessageReceived;
+        //public static event EventHandler<ServiceChatEventArgs> OnServiceMessageSent;
         public static event EventHandler<TerrariaChatEventArgs> OnGameMessageReceived;
         public static event EventHandler<TerrariaChatEventArgs> OnGameMessageSent;
 
 
         public static void RaiseTerrariaMessageReceived(object sender, int playerId, Color color, string msg)
         {
-            OnGameMessageReceived(sender, new TerrariaChatEventArgs(playerId, color, msg));
+            try
+            {
+                OnGameMessageReceived(sender, new TerrariaChatEventArgs(playerId, color, msg));
+            }
+            catch (Exception e) { Console.WriteLine(e.Message); }
         }
     }
 

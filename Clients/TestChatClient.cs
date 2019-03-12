@@ -14,19 +14,19 @@ namespace TerrariaChatRelay.Clients
     {
         public TestChatClient(List<IChatClient> parent) : base(parent) { }
 
-        public override void Connect()
+        public override Task ConnectAsync()
         {
-
+            return Task.CompletedTask;
         }
 
-        public override void Disconnect()
+        public override Task DisconnectAsync()
         {
-
+            return Task.CompletedTask;
         }
 
         public override void GameMessageReceived_Handler(object sender, TerrariaChatEventArgs e)
         {
-            NetMessage.BroadcastChatMessage(NetworkText.FromLiteral(e.Message + " - It worked!"), Color.Cyan, -1);
+            NetMessage.BroadcastChatMessage(NetworkText.FromLiteral(e.Message + " - TestChatClient"), Color.Cyan, -1);
         }
 
         public override void GameMessageSent_Handler(object sender, TerrariaChatEventArgs msg)

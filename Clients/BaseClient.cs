@@ -53,8 +53,8 @@ namespace TerrariaChatRelay.Clients
             EventManager.OnGameMessageSent -= GameMessageSent_Handler;
         }
 
-        public abstract void Connect();
-        public abstract void Disconnect();
+        public abstract Task ConnectAsync();
+        public abstract Task DisconnectAsync();
 
         // Events
         //public abstract Task ClientMessageReceived_Handler(string msg);
