@@ -37,7 +37,7 @@ namespace TerrariaChatRelay
             // Test Connect method specifically
             discord.ConnectAsync();
         }
-
+        
         // Override text receive method from server
         private bool NetTextModule_DeserializeAsServer(NetTextModule.orig_DeserializeAsServer orig, Terraria.GameContent.NetModules.NetTextModule self, BinaryReader reader, int senderPlayerId)
         {

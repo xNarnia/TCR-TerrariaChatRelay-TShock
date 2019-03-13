@@ -40,11 +40,11 @@ namespace TerrariaChatRelay.Clients.Interfaces
         ///// <summary>
         ///// Handler fired when server receives a message from the game.
         ///// </summary>
-        void GameMessageReceived_Handler(object sender, TerrariaChatEventArgs msg);
+        void GameMessageReceivedHandlerAsync(object sender, TerrariaChatEventArgs msg);
         ///// <summary>
         ///// Handler fired when server sends a message to the game.
         ///// </summary>
-        void GameMessageSent_Handler(object sender, TerrariaChatEventArgs msg);
+        void GameMessageSentHandlerAsync(object sender, TerrariaChatEventArgs msg);
 
     }
 }

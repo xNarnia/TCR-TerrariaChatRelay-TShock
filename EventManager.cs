@@ -24,11 +24,7 @@ namespace TerrariaChatRelay
 
         public static void RaiseTerrariaMessageReceived(object sender, int playerId, Color color, string msg)
         {
-            try
-            {
-                OnGameMessageReceived(sender, new TerrariaChatEventArgs(playerId, color, msg));
-            }
-            catch (Exception e) { Console.WriteLine(e.Message); }
+            OnGameMessageReceived(sender, new TerrariaChatEventArgs(playerId, color, msg));
         }
     }
 

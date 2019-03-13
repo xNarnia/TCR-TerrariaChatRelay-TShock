@@ -39,8 +39,8 @@ namespace TerrariaChatRelay.Clients
 
             //EventManager.OnClientMessageReceived += ClientMessageReceived_Handler;
             //EventManager.OnClientMessageSent += ClientMessageSent_Handler;
-            EventManager.OnGameMessageReceived += GameMessageReceived_Handler;
-            EventManager.OnGameMessageSent += GameMessageSent_Handler;
+            EventManager.OnGameMessageReceived += GameMessageReceivedHandlerAsync;
+            EventManager.OnGameMessageSent += GameMessageSentHandlerAsync;
         }
 
         /// <summary>
@@ -49,8 +49,8 @@ namespace TerrariaChatRelay.Clients
         public void Dispose()
         {
             _parent.Remove(this);
-            EventManager.OnGameMessageReceived -= GameMessageReceived_Handler;
-            EventManager.OnGameMessageSent -= GameMessageSent_Handler;
+            EventManager.OnGameMessageReceived -= GameMessageReceivedHandlerAsync;
+            EventManager.OnGameMessageSent -= GameMessageSentHandlerAsync;
         }
 
         public abstract Task ConnectAsync();
@@ -59,7 +59,7 @@ namespace TerrariaChatRelay.Clients
         // Events
         //public abstract Task ClientMessageReceived_Handler(string msg);
         //public abstract Task ClientMessageSent_Handler(string msg);
-        public abstract void GameMessageReceived_Handler(object sender, TerrariaChatEventArgs msg);
-        public abstract void GameMessageSent_Handler(object sender, TerrariaChatEventArgs msg);
+        public abstract void GameMessageReceivedHandlerAsync(object sender, TerrariaChatEventArgs msg);
+        public abstract void GameMessageSentHandlerAsync(object sender, TerrariaChatEventArgs msg);
     }
 }

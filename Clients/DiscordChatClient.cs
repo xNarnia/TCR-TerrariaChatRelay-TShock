@@ -29,6 +29,7 @@ namespace TerrariaChatRelay.Clients
             {
                 UseCookies = false
             });
+            client.DefaultRequestHeaders.Add("Authorization", "Bot " + BOT_TOKEN);
         }
 
         // Test Connect method just to get it working
@@ -89,26 +90,16 @@ namespace TerrariaChatRelay.Clients
             return "{\"op\":2,\"d\":{\"token\":\"" + BOT_TOKEN + "\",\"properties\":{\"$os\":\"linux\",\"$browser\":\"app\",\"$device\":\"mono\"},\"compress\":false}}";
         }
 
-        public override void GameMessageReceived_Handler(object sender, TerrariaChatEventArgs msg)
+        public override async void GameMessageReceivedHandlerAsync(object sender, TerrariaChatEventArgs msg)
         {
             // TO-DO: Implement NewtonsoftJson 
             var json = "{\"content\":\"Incoming!\",\"tts\":false,\"embed\":{\"title\":\"" + msg.Message + "\",\"description\":\"This message was sent from Terraria.\"}}";
 
-            var req = new HttpRequestMessage(HttpMethod.Post, new Uri(API_URL + "/channels/" + CHANNEL_ID + "/messages"));
-
-            req.Headers.Add("Accept", "*/*");
-            req.Headers.Add("Connection", "keep-alive");
-            req.Headers.Add("Content-Length", json.Length.ToString());
-            req.Headers.Add("Content-Type", "application/json");
-            req.Headers.Add("Authorization", "Bot " + BOT_TOKEN);
-            req.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            // Being blocked? 
-            // Need async event?
-            client.SendAsync(req).Start();
+            var response = await client.PostAsync(new Uri(API_URL + "/channels/" + CHANNEL_ID + "/messages"), new StringContent(json, Encoding.UTF8, "application/json"));
+            Console.WriteLine(await response.Content.ReadAsStringAsync());
         }
 
-        public override void GameMessageSent_Handler(object sender, TerrariaChatEventArgs msg)
+        public override void GameMessageSentHandlerAsync(object sender, TerrariaChatEventArgs msg)
         {
 
         }

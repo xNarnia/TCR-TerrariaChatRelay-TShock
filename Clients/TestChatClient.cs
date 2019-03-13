@@ -24,12 +24,12 @@ namespace TerrariaChatRelay.Clients
             return Task.CompletedTask;
         }
 
-        public override void GameMessageReceived_Handler(object sender, TerrariaChatEventArgs e)
+        public override void GameMessageReceivedHandlerAsync(object sender, TerrariaChatEventArgs e)
         {
             NetMessage.BroadcastChatMessage(NetworkText.FromLiteral(e.Message + " - TestChatClient"), Color.Cyan, -1);
         }
 
-        public override void GameMessageSent_Handler(object sender, TerrariaChatEventArgs msg)
+        public override void GameMessageSentHandlerAsync(object sender, TerrariaChatEventArgs msg)
         {
 
         }
