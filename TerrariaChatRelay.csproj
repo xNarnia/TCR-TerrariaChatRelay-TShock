@@ -40,6 +40,7 @@
     <Compile Include="Clients\Interfaces\IHandlesEmotes.cs" />
     <Compile Include="Clients\Interfaces\IChatClient.cs" />
     <Compile Include="Clients\TestChatClient.cs" />
+    <Compile Include="Helpers\SimpleSocket.cs" />
     <Compile Include="TerrariaChatRelay.cs" />
   </ItemGroup>
   <ItemGroup>
