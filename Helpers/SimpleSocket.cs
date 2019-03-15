@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -21,25 +20,22 @@ namespace TerrariaChatRelay.Helpers
         /// <summary>
         /// Specifies the current state of the WebSocket.
         /// </summary>
-        public ConnectionState ConnectState { get { return connectionState; } }
+        public WebSocketState ConnectState { get { return WebSocket.State; } }
         /// <summary>
         /// Uri used to initiate WebSocket connection.
         /// </summary>
         public Uri SocketUri { get; }
+        /// <summary>
+        /// Event fired when WebSocket receives one set of data from start to finish.
+        /// </summary>
+        public event Action<string> OnDataReceived;
 
         private ArraySegment<Byte> buffer { get; set; }
-        private StringBuilder builder { get; set; }
-        private CancellationToken token { get { return CancellationToken.Token;  } }
-        private ConnectionState connectionState { get; set; }
+        private StringBuilder data { get; set; }
+        private CancellationToken token { get { return CancellationToken.Token; } }
+        private Queue<Byte[]> sendQueue { get; set; }
 
-        public enum ConnectionState
-        {
-            Closed,
-            Open,
-            Sending,
-            Receiving,
-            Error
-        }
+        public SimpleSocket(string uri) : this(new Uri(uri)) { }
 
         /// <summary>
         /// Initializes a maintained WebSocket on another thread using the Uri provided. 
@@ -48,44 +44,85 @@ namespace TerrariaChatRelay.Helpers
         public SimpleSocket(Uri uri)
         {
             SocketUri = uri;
-
-            // Remove this as these are Discord variables; not generic enough
-            bool doLogin = false;
-            bool loginDone = false;
-
-
-            await websocket.ConnectAsync(new Uri(GATEWAY_URL), token).ConfigureAwait(false);
-
-            // Consider a better way to handle this loop
-            // Is this blocking the thread?
-            while (websocket.State == WebSocketState.Open && !token.IsCancellationRequested)
-            {
-                if (!doLogin || loginDone == true)
-                {
-                    var result = await websocket.ReceiveAsync(buffer, token).ConfigureAwait(false);
-
-                    foreach (var byteValue in buffer)
-                    {
-                        data.Append(Convert.ToChar(byteValue));
-                    }
-
-                    if (result.EndOfMessage)
-                    {
-                        //HandleData(data.ToString());
-                        Console.WriteLine(data.ToString());
-                        data.Clear();
-                        doLogin = true;
-                    }
-                }
-                else
-                {
-                    var encoded = Encoding.UTF8.GetBytes(DoLogin());
-                    buffer = new ArraySegment<Byte>(encoded, 0, encoded.Length);
-
-                    await websocket.SendAsync(buffer, WebSocketMessageType.Text, true, token).ConfigureAwait(false);
-                    loginDone = true;
-                }
-            }
+            InitializeAsync();
         }
+
+        /// <summary>
+        /// Uses UTF8 encoding to convert string into byte array, then queues the resulting data for sending.
+        /// </summary>
+        /// <param name="data">String data to encode into a byte sequence then send.</param>
+        public void SendData(string data)
+            => SendData(Encoding.UTF8.GetBytes(data));
+
+        /// <summary>
+        /// Queues the input data for sending.
+        /// </summary>
+        /// <param name="data">Byte data to send.</param>
+        public void SendData(byte[] data)
+        {
+            sendQueue.Enqueue(data);
+        }
+
+        private async void InitializeAsync()
+        {
+            await WebSocket.ConnectAsync(SocketUri, token);
+
+            var MessageReceivedListener = Task.Run(async () =>
+            {
+                bool IncomingMessage = false;
+
+                while (SocketOpen())
+                {
+                    var result = await WebSocket.ReceiveAsync(buffer, token).ConfigureAwait(false);
+
+                    if (!result.EndOfMessage && !IncomingMessage)
+                        IncomingMessage = true;
+
+                    if (IncomingMessage)
+                    {
+                        foreach (var byteValue in buffer)
+                        {
+                            data.Append(Convert.ToChar(byteValue));
+                        }
+
+                        if (result.EndOfMessage)
+                        {
+                            OnDataReceived(data.ToString());
+                            data.Clear();
+                            IncomingMessage = false;
+                        }
+                    }
+
+                    await Task.Delay(10);
+                }
+            });
+
+            var MessageSentListener = Task.Run(async () =>
+            {
+                while (SocketOpen())
+                {
+                    while(sendQueue.Count > 0)
+                    {
+                        var sendData = sendQueue.Dequeue();
+
+                        buffer = new ArraySegment<Byte>(sendData, 0, sendData.Length);
+                        await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, token);
+                    }
+                }
+            });
+
+            Task.WaitAll(MessageReceivedListener, MessageSentListener);
+        }
+
+        private bool SocketOpen()
+        {
+            if (WebSocket.State != WebSocketState.Open)
+                return false;
+            if (token.IsCancellationRequested)
+                return false;
+
+            return true;
+        }
+
     }
 }
