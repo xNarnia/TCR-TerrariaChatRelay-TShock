@@ -43,7 +43,14 @@ namespace TerrariaChatRelay.Helpers
         /// <param name="uri">Uri to initialize WebSocket with. Supports ws and wss format.</param>
         public SimpleSocket(Uri uri)
         {
+            WebSocket = new ClientWebSocket();
+            CancellationToken = new CancellationTokenSource();
             SocketUri = uri;
+
+            buffer = new ArraySegment<byte>();
+            data = new StringBuilder();
+            sendQueue = new Queue<byte[]>();
+
             InitializeAsync();
         }
 
@@ -63,6 +70,9 @@ namespace TerrariaChatRelay.Helpers
             sendQueue.Enqueue(data);
         }
 
+        /// <summary>
+        /// Initializes a Receive and Send listener using separate tasks. Sends and receives can happen asynchronously.
+        /// </summary>
         private async void InitializeAsync()
         {
             await WebSocket.ConnectAsync(SocketUri, token);
@@ -103,7 +113,7 @@ namespace TerrariaChatRelay.Helpers
                 {
                     while(sendQueue.Count > 0)
                     {
-                        var sendData = sendQueue.Dequeue();
+                        byte[] sendData = sendQueue.Dequeue();
 
                         buffer = new ArraySegment<Byte>(sendData, 0, sendData.Length);
                         await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, token);
@@ -114,6 +124,10 @@ namespace TerrariaChatRelay.Helpers
             Task.WaitAll(MessageReceivedListener, MessageSentListener);
         }
 
+        /// <summary>
+        /// Returns whether the WebSocket is open and hasn't been canceled.
+        /// </summary>
+        /// <returns></returns>
         private bool SocketOpen()
         {
             if (WebSocket.State != WebSocketState.Open)

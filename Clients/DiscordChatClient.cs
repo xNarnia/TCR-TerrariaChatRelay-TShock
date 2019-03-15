@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TerrariaChatRelay.Clients.Interfaces;
+using TerrariaChatRelay.Helpers;
 
 namespace TerrariaChatRelay.Clients
 {
@@ -16,9 +17,12 @@ namespace TerrariaChatRelay.Clients
         private List<IChatClient> _parent { get; set; }
         private const string GATEWAY_URL = "wss://gateway.discord.gg/?v=6&encoding=json";
         private const string API_URL = "https://discordapp.com/api/v6";
-        private const string BOT_TOKEN = "BOT_TOKEN";
-        private const string CHANNEL_ID = "CHANNELID";
+        private const string BOT_TOKEN = "NTU0MzExNzI2MjIxMzYxMTYy.D22adw.zqY8nv_qDJqkgabduPmS2E9WQi4";
+        private const string CHANNEL_ID = "455716114761121795";
         private readonly HttpClient client;
+        private SimpleSocket Socket;
+
+        private bool doLogin = true;
 
         // TO-DO: Make sure code supports C# 6 and that there are no drawbacks so coding is less annoying in the future
 
@@ -32,8 +36,24 @@ namespace TerrariaChatRelay.Clients
             client.DefaultRequestHeaders.Add("Authorization", "Bot " + BOT_TOKEN);
         }
 
-        // Test Connect method just to get it working
         public override async Task ConnectAsync()
+        {
+            Socket = new SimpleSocket(GATEWAY_URL);
+            Socket.OnDataReceived += Websocket_OnDataReceived;
+        }
+
+        private void Websocket_OnDataReceived(string obj)
+        {
+            Console.WriteLine(obj);
+            if (doLogin)
+            {
+                doLogin = false;
+                Socket.SendData(DoLogin());
+            }
+        }
+
+        // Test Connect method just to get it working
+        public async Task ConnectAsyncWithoutSimpleSocket()
         {
             var websocket = new ClientWebSocket();
             var buffer = new ArraySegment<Byte>(new Byte[1024]);
