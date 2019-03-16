@@ -9,6 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using TerrariaChatRelay.Clients.Interfaces;
 using TerrariaChatRelay.Helpers;
+using Newtonsoft.Json;
+using TerrariaChatRelay.Clients.Models.Discord;
+using Newtonsoft.Json.Linq;
+using Terraria;
+using Terraria.Localization;
+using Microsoft.Xna.Framework;
 
 namespace TerrariaChatRelay.Clients
 {
@@ -17,7 +23,7 @@ namespace TerrariaChatRelay.Clients
         private List<IChatClient> _parent { get; set; }
         private const string GATEWAY_URL = "wss://gateway.discord.gg/?v=6&encoding=json";
         private const string API_URL = "https://discordapp.com/api/v6";
-        private const string BOT_TOKEN = "NTU0MzExNzI2MjIxMzYxMTYy.D22adw.zqY8nv_qDJqkgabduPmS2E9WQi4";
+        private const string BOT_TOKEN = "NTU0MzExNzI2MjIxMzYxMTYy.D26hNg._Q7mTpzVAuo35JOj5sWu8wIDXBY";
         private const string CHANNEL_ID = "455716114761121795";
         private readonly HttpClient client;
         private SimpleSocket Socket;
@@ -42,66 +48,55 @@ namespace TerrariaChatRelay.Clients
             Socket.OnDataReceived += Websocket_OnDataReceived;
         }
 
+        public override Task DisconnectAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         private void Websocket_OnDataReceived(string obj)
         {
-            Console.WriteLine(obj);
+            Console.WriteLine("\n" + obj + "\n");
+
             if (doLogin)
             {
                 doLogin = false;
                 Socket.SendData(DoLogin());
             }
-        }
-
-        // Test Connect method just to get it working
-        public async Task ConnectAsyncWithoutSimpleSocket()
-        {
-            var websocket = new ClientWebSocket();
-            var buffer = new ArraySegment<Byte>(new Byte[1024]);
-            var data = new StringBuilder();
-            var source = new CancellationTokenSource();
-            var token = source.Token;
-            bool doLogin = false;
-            bool loginDone = false;
-
-            await websocket.ConnectAsync(new Uri(GATEWAY_URL), token).ConfigureAwait(false);
-
-            // Consider a better way to handle this loop
-            // Is this blocking the thread?
-            while (websocket.State == WebSocketState.Open && !token.IsCancellationRequested)
+            else
             {
-                if (!doLogin || loginDone == true)
+                try
                 {
-                    var result = await websocket.ReceiveAsync(buffer, token).ConfigureAwait(false);
+                    var message = JsonConvert.DeserializeObject<DiscordDispatchMessage>(obj);
 
-                    foreach (var byteValue in buffer)
+                    if (message.MessageType == "MESSAGE_CREATE" && !message.Data.Author.IsBot)
                     {
-                        data.Append(Convert.ToChar(byteValue));
-                    }
-
-                    if (result.EndOfMessage)
-                    {
-                        //HandleData(data.ToString());
-                        Console.WriteLine(data.ToString());
-                        data.Clear();
-                        doLogin = true;
+                        NetMessage.BroadcastChatMessage(
+                            NetworkText.FromLiteral(
+                                "[Discord] <" + message.Data.Author.Username + "> " + message.Data.Message), Color.White, -1);
                     }
                 }
-                else
-                {
-                    var encoded = Encoding.UTF8.GetBytes(DoLogin());
-                    buffer = new ArraySegment<Byte>(encoded, 0, encoded.Length);
+                catch (Exception) { }
 
-                    await websocket.SendAsync(buffer, WebSocketMessageType.Text, true, token).ConfigureAwait(false);
-                    loginDone = true;
-                }
+
+                //JObject jObject = JObject.Parse(obj);
+                //if(jObject.TryGetValue("op", out JToken opcode))
+                //{
+                //    if(opcode.Value<int>() == 0)
+                //    {
+                //        if (jObject.TryGetValue("t", out JToken type))
+                //        {
+                //            if (type.Value<string>() == "MESSAGE_CREATE")
+                //            {
+                //                var message = JsonConvert.DeserializeObject<DiscordCreateMessage>(obj);
+
+                //                NetMessage.BroadcastChatMessage(
+                //                    NetworkText.FromLiteral(
+                //                        "[Discord] <" + message.Author.Username + "> " + message.Message), Color.White, -1);
+                //            }
+                //        }
+                //    }
+                //}
             }
-
-            Console.WriteLine("Disconnected.");
-        }
-
-        public override Task DisconnectAsync()
-        {
-            return Task.CompletedTask;
         }
 
         // Example login json
@@ -113,7 +108,8 @@ namespace TerrariaChatRelay.Clients
         public override async void GameMessageReceivedHandlerAsync(object sender, TerrariaChatEventArgs msg)
         {
             // TO-DO: Implement NewtonsoftJson 
-            var json = "{\"content\":\"Incoming!\",\"tts\":false,\"embed\":{\"title\":\"" + msg.Message + "\",\"description\":\"This message was sent from Terraria.\"}}";
+            //var json = "{\"content\":\"Incoming! <@&554312082137546762> <@446048405844918272>\",\"tts\":false,\"embed\":{\"title\":\"" + msg.Message + "\",\"description\":\"This message was sent from Terraria.\"}}";
+            var json = "{\"content\":\"" + Main.player[msg.PlayerId].name + ": " + msg.Message + "\",\"tts\":false}";
 
             var response = await client.PostAsync(new Uri(API_URL + "/channels/" + CHANNEL_ID + "/messages"), new StringContent(json, Encoding.UTF8, "application/json"));
             Console.WriteLine(await response.Content.ReadAsStringAsync());

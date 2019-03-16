@@ -30,7 +30,6 @@ namespace TerrariaChatRelay.Helpers
         /// </summary>
         public event Action<string> OnDataReceived;
 
-        private ArraySegment<Byte> buffer { get; set; }
         private StringBuilder data { get; set; }
         private CancellationToken token { get { return CancellationToken.Token; } }
         private Queue<Byte[]> sendQueue { get; set; }
@@ -47,7 +46,6 @@ namespace TerrariaChatRelay.Helpers
             CancellationToken = new CancellationTokenSource();
             SocketUri = uri;
 
-            buffer = new ArraySegment<byte>();
             data = new StringBuilder();
             sendQueue = new Queue<byte[]>();
 
@@ -79,31 +77,38 @@ namespace TerrariaChatRelay.Helpers
 
             var MessageReceivedListener = Task.Run(async () =>
             {
-                bool IncomingMessage = false;
+                ArraySegment<Byte> receiveBuffer = new ArraySegment<byte>(new Byte[2048]);
 
-                while (SocketOpen())
+                try
                 {
-                    var result = await WebSocket.ReceiveAsync(buffer, token).ConfigureAwait(false);
-
-                    if (!result.EndOfMessage && !IncomingMessage)
-                        IncomingMessage = true;
-
-                    if (IncomingMessage)
+                    while (SocketOpen())
                     {
-                        foreach (var byteValue in buffer)
+
+                        var result = await WebSocket.ReceiveAsync(receiveBuffer, token).ConfigureAwait(false);
+                        var i = result.Count;
+
+                        foreach (var byteValue in receiveBuffer)
                         {
                             data.Append(Convert.ToChar(byteValue));
+                            i--;
+
+                            if (i <= 0)
+                                break;
                         }
 
                         if (result.EndOfMessage)
                         {
                             OnDataReceived(data.ToString());
                             data.Clear();
-                            IncomingMessage = false;
                         }
                     }
 
-                    await Task.Delay(10);
+                    Console.WriteLine($"Connection State: " + WebSocket.State.ToString());
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
                 }
             });
 
@@ -115,8 +120,8 @@ namespace TerrariaChatRelay.Helpers
                     {
                         byte[] sendData = sendQueue.Dequeue();
 
-                        buffer = new ArraySegment<Byte>(sendData, 0, sendData.Length);
-                        await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, token);
+                        var sendBuffer = new ArraySegment<Byte>(sendData, 0, sendData.Length);
+                        await WebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, true, token);
                     }
                 }
             });
