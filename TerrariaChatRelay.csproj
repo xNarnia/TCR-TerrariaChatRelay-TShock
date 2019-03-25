@@ -12,6 +12,8 @@
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -22,15 +24,18 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Clients\Models\Discord\DiscordMessageData.cs" />
@@ -43,7 +48,9 @@
     <Compile Include="Clients\Interfaces\IHandlesEmotes.cs" />
     <Compile Include="Clients\Interfaces\IChatClient.cs" />
     <Compile Include="Clients\TestChatClient.cs" />
+    <Compile Include="Helpers\SimpleConfig.cs" />
     <Compile Include="Helpers\SimpleSocket.cs" />
+    <Compile Include="TCRConfig.cs" />
     <Compile Include="TerrariaChatRelay.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -69,7 +76,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Net.Http">
-      <HintPath>C:\Users\princ\Documents\My Games\Terraria\ModLoader\Mod Sources\TerrariaChatRelay\lib\System.Net.Http.dll</HintPath>
+      <HintPath>lib\System.Net.Http.dll</HintPath>
     </Reference>
     <Reference Include="Terraria">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\terraria\Terraria.exe</HintPath>
@@ -77,6 +84,9 @@
     <Reference Include="TerrariaHooks">
       <HintPath>lib\TerrariaHooks.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

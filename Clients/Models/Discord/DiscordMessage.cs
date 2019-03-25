@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,6 @@ namespace TerrariaChatRelay.Clients.Models.Discord
         /// Event data. A JSON value represented as a string. For more info, visit Discord API Docs -> Gateway -> Payloads.
         /// </summary>
         [JsonProperty("d")]
-        public DiscordMessageData Data { get; set; }
+        public object Data { get; set; }
     }
 }

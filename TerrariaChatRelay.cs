@@ -9,11 +9,14 @@ using Terraria.ModLoader;
 using TerrariaChatRelay.Clients;
 using On.Terraria.GameContent.NetModules;
 using Terraria.Chat;
+using System.Reflection;
+using TerrariaChatRelay.Helpers;
 
 namespace TerrariaChatRelay
 {
 	public class TerrariaChatRelay : Mod
     {
+        public static SimpleConfig Config { get; set; }
 
         public TerrariaChatRelay()
 		{
@@ -22,6 +25,7 @@ namespace TerrariaChatRelay
         public override void Load()
         {
             base.Load();
+            Config = new TCRConfig();
 
             // Intercept DeserializeAsServer method
             NetTextModule.DeserializeAsServer += NetTextModule_DeserializeAsServer;
@@ -33,7 +37,7 @@ namespace TerrariaChatRelay
 
             EventManager.Subscribers.Add(new TestChatClient(EventManager.Subscribers));
             EventManager.Subscribers.Add(discord);
-
+            
             // Test Connect method specifically
             discord.ConnectAsync();
         }

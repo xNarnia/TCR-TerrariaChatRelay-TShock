@@ -101,6 +101,8 @@ namespace TerrariaChatRelay.Helpers
                             OnDataReceived(data.ToString());
                             data.Clear();
                         }
+
+                        await Task.Delay(50);
                     }
 
                     Console.WriteLine($"Connection State: " + WebSocket.State.ToString());

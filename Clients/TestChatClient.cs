@@ -16,12 +16,12 @@ namespace TerrariaChatRelay.Clients
 
         public override Task ConnectAsync()
         {
-            return Task.CompletedTask;
+            return null;
         }
 
         public override Task DisconnectAsync()
         {
-            return Task.CompletedTask;
+            return null;
         }
 
         public override void GameMessageReceivedHandlerAsync(object sender, TerrariaChatEventArgs e)
