@@ -31,12 +31,10 @@ namespace TerrariaChatRelay.Clients
         private System.Timers.Timer heartbeatTimer;
         private bool debug = true;
 
-        private bool doLogin = true;
-
         public DiscordChatClient(List<IChatClient> _parent) 
             : base(_parent) { }
 
-        public override async Task ConnectAsync()
+        public override void Connect()
         {
             if (BOT_TOKEN == "BOT_TOKEN") return;
             if (CHANNEL_ID == "CHANNEL_ID") return;
@@ -51,9 +49,9 @@ namespace TerrariaChatRelay.Clients
             Socket.OnDataReceived += Websocket_OnHeartbeatReceived;
         }
 
-        public override Task DisconnectAsync()
+        public override void Disconnect()
         {
-            return null;
+
         }
 
         private void Websocket_OnHeartbeatReceived(string json)
@@ -107,7 +105,7 @@ namespace TerrariaChatRelay.Clients
             }
         }
 
-        public override async void GameMessageReceivedHandlerAsync(object sender, TerrariaChatEventArgs msg)
+        public override async void GameMessageReceivedHandler(object sender, TerrariaChatEventArgs msg)
         {
             try
             {
@@ -115,7 +113,7 @@ namespace TerrariaChatRelay.Clients
                 var json = DiscordMessageFactory.CreateTextMessage(Main.player[msg.PlayerId].name + ": " + msg.Message);
 
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var contentbyte = await content.ReadAsByteArrayAsync();
+                var contentbyte = await content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
                 // Legacy Post. Put in it's own Helper Class for use?
                 HttpWebRequest webRequest = (HttpWebRequest)HttpWebRequest.CreateHttp(new Uri(API_URL + "/channels/" + CHANNEL_ID + "/messages"));
@@ -124,16 +122,16 @@ namespace TerrariaChatRelay.Clients
                 webRequest.ContentLength = json.Length;
                 webRequest.Headers.Add("Authorization", "Bot " + BOT_TOKEN);
 
-                var reqStream = await webRequest.GetRequestStreamAsync();
+                var reqStream = await webRequest.GetRequestStreamAsync().ConfigureAwait(false);
                 reqStream.Write(contentbyte, 0, json.Length);
 
-                var res = await webRequest.GetResponseAsync();
+                var res = await webRequest.GetResponseAsync().ConfigureAwait(false);
 
             }
             catch (Exception e) { Console.WriteLine(e); }
         }
 
-        public override void GameMessageSentHandlerAsync(object sender, TerrariaChatEventArgs msg)
+        public override void GameMessageSentHandler(object sender, TerrariaChatEventArgs msg)
         {
 
         }

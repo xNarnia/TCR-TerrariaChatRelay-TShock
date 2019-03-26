@@ -22,12 +22,12 @@ namespace TerrariaChatRelay.Clients.Interfaces
         /// <summary>
         /// Initiate connection to service.
         /// </summary>
-        Task ConnectAsync();
+        void Connect();
 
         /// <summary>
         /// Terminate connection to service.
         /// </summary>
-        Task DisconnectAsync();
+        void Disconnect();
 
         ///// <summary>
         ///// Handler fired when server receives a message from service.
@@ -40,11 +40,11 @@ namespace TerrariaChatRelay.Clients.Interfaces
         ///// <summary>
         ///// Handler fired when server receives a message from the game.
         ///// </summary>
-        void GameMessageReceivedHandlerAsync(object sender, TerrariaChatEventArgs msg);
+        void GameMessageReceivedHandler(object sender, TerrariaChatEventArgs msg);
         ///// <summary>
         ///// Handler fired when server sends a message to the game.
         ///// </summary>
-        void GameMessageSentHandlerAsync(object sender, TerrariaChatEventArgs msg);
+        void GameMessageSentHandler(object sender, TerrariaChatEventArgs msg);
 
     }
 }

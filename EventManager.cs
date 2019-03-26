@@ -30,7 +30,7 @@ namespace TerrariaChatRelay
         {
             for(var i = 0; i < Subscribers.Count; i++)
             {
-                Subscribers[i].ConnectAsync();
+                Subscribers[i].Connect();
             }
         }
 
@@ -38,7 +38,7 @@ namespace TerrariaChatRelay
         {
             foreach (var subscriber in Subscribers)
             {
-                subscriber.DisconnectAsync();
+                subscriber.Disconnect();
             }
         }
     }

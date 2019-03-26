@@ -53,7 +53,7 @@ namespace TerrariaChatRelay.Helpers
             data = new StringBuilder();
             sendQueue = new Queue<byte[]>();
 
-            InitializeAsync();
+            InitializeAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -75,10 +75,10 @@ namespace TerrariaChatRelay.Helpers
         /// <summary>
         /// Initializes a Receive and Send listener using separate tasks. Sends and receives can happen asynchronously.
         /// </summary>
-        private async void InitializeAsync()
+        private async Task InitializeAsync()
         {
             Console.WriteLine("Initializing Socket...");
-            await WebSocketClient.ConnectAsync(SocketUri, token);
+            await WebSocketClient.ConnectAsync(SocketUri, token).ConfigureAwait(false);
 
             if (WebSocketClient.State != WebSocketState.Open)
             {
@@ -128,7 +128,7 @@ namespace TerrariaChatRelay.Helpers
                 {
                     Console.WriteLine(e);
                 }
-            });
+            }).ConfigureAwait(false);
 
             var MessageSentListener = Task.Run(async () =>
             {
@@ -142,7 +142,7 @@ namespace TerrariaChatRelay.Helpers
                         await WebSocketClient.SendAsync(sendBuffer, WebSocketMessageType.Text, true, token);
                     }
                 }
-            });
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
