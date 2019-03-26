@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TerrariaChatRelay.Clients.Models.Discord
+namespace TerrariaChatRelay.Clients.Models.Discord.JSON
 {
     public class DiscordDispatchMessage : DiscordMessage
     {
@@ -21,6 +21,22 @@ namespace TerrariaChatRelay.Clients.Models.Discord
         /// </summary>
         [JsonProperty("t")]
         public string MessageType { get; set; }
+
+        /// <summary>
+        /// Checks to see if the DispatchMessage has any associated Chat Message data. If not, it returns null.
+        /// </summary>
+        /// <returns>Data if it is present.</returns>
+        public DiscordMessageData GetChatMessageData()
+        {
+            if(MessageType == "MESSAGE_CREATE")
+            {
+                return ((JObject)Data).ToObject<DiscordMessageData>();
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 
     public class DiscordMessage

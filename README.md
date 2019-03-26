@@ -3,13 +3,9 @@ Self-serving Terraria Chat Relay with extensible chat service support
 
 # To-do:
 
-* Implement Discord to Terraria relay
-* Connect MessageSent events
-* Have EventManager handle Inits and Connects
-* Move Connects to World OnLoad, keep Inits in Mod Load
-* Implement NewtonsoftJson to BaseClient or IChatClient for storing config files
+* Figure out why this only works on Windows and not Linux (or is it just my Linux server and/or my firewall?)
+* Connect some more events
 * Have Clients register their own commands for setting themselves up (examples: tokens, channel id's, etc.)
-* Organize DiscordChatClient to not be so messy (Use State instead of bools, Event socketclient?)
 
 Other chat services considered: IRC, Slack
 

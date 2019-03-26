@@ -11,6 +11,7 @@ using On.Terraria.GameContent.NetModules;
 using Terraria.Chat;
 using System.Reflection;
 using TerrariaChatRelay.Helpers;
+using Terraria.UI.Chat;
 
 namespace TerrariaChatRelay
 {
@@ -26,6 +27,7 @@ namespace TerrariaChatRelay
         {
             base.Load();
             Config = new TCRConfig();
+            Console.WriteLine(Config.FilePath);
 
             // Intercept DeserializeAsServer method
             NetTextModule.DeserializeAsServer += NetTextModule_DeserializeAsServer;
@@ -33,13 +35,11 @@ namespace TerrariaChatRelay
             // Add subscribers to list
             EventManager.Subscribers = new List<Clients.Interfaces.IChatClient>();
 
-            var discord = new MessyTestDiscordChatClient(EventManager.Subscribers);
+            // Clients auto subscribe to list.
+            new TestChatClient(EventManager.Subscribers);
+            new DiscordChatClient(EventManager.Subscribers);
 
-            EventManager.Subscribers.Add(new TestChatClient(EventManager.Subscribers));
-            EventManager.Subscribers.Add(discord);
-            
-            // Test Connect method specifically
-            discord.ConnectAsync();
+            EventManager.ConnectClients();
         }
         
         // Override text receive method from server
@@ -49,10 +49,7 @@ namespace TerrariaChatRelay
 
             EventManager.RaiseTerrariaMessageReceived(this, senderPlayerId, Color.White, message.Text);
 
-            // Mimic original chat format since we're overriding the message
-            NetMessage.BroadcastChatMessage(
-                NetworkText.FromLiteral(
-                    "<" + Main.player[senderPlayerId].name + "> " + message.Text), Color.White, -1);
+            ChatManager.Commands.ProcessReceivedMessage(message, senderPlayerId);
 
             return false;
         }

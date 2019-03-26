@@ -55,6 +55,7 @@ namespace TerrariaChatRelay.Helpers
                         Add(key.Key, key.Value);
                     }
                 }
+                Console.WriteLine($"Config loaded - {ConfigId}");
             }
             else if (CreateNewIfNotFound)
             {
@@ -64,6 +65,7 @@ namespace TerrariaChatRelay.Helpers
                 {
                     Add(key.Key, key.Value);
                 }
+                Console.WriteLine($"Config created - {ConfigId}");
             }
         }
 

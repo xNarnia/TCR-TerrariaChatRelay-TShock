@@ -21,10 +21,25 @@ namespace TerrariaChatRelay
         public static event EventHandler<TerrariaChatEventArgs> OnGameMessageReceived;
         public static event EventHandler<TerrariaChatEventArgs> OnGameMessageSent;
 
-
         public static void RaiseTerrariaMessageReceived(object sender, int playerId, Color color, string msg)
         {
             OnGameMessageReceived(sender, new TerrariaChatEventArgs(playerId, color, msg));
+        }
+
+        public static void ConnectClients()
+        {
+            for(var i = 0; i < Subscribers.Count; i++)
+            {
+                Subscribers[i].ConnectAsync();
+            }
+        }
+
+        public static void DisconnectClients()
+        {
+            foreach (var subscriber in Subscribers)
+            {
+                subscriber.DisconnectAsync();
+            }
         }
     }
 
