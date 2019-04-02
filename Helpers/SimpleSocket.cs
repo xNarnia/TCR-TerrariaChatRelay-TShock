@@ -98,7 +98,6 @@ namespace TerrariaChatRelay.Helpers
                     {
                         WebSocketReceiveResult result = null;
                         result = await WebSocketClient.ReceiveAsync(receiveBuffer, token);
-
                         var i = result.Count;
 
                         //Console.WriteLine("Receiving data...");
@@ -128,7 +127,7 @@ namespace TerrariaChatRelay.Helpers
                 {
                     Console.WriteLine(e);
                 }
-            }).ConfigureAwait(false);
+            });
 
             var MessageSentListener = Task.Run(async () =>
             {
@@ -142,7 +141,9 @@ namespace TerrariaChatRelay.Helpers
                         await WebSocketClient.SendAsync(sendBuffer, WebSocketMessageType.Text, true, token);
                     }
                 }
-            }).ConfigureAwait(false);
+            });
+
+            Task.WhenAll(MessageReceivedListener, MessageSentListener);
         }
 
         /// <summary>

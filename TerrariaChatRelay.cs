@@ -36,7 +36,7 @@ namespace TerrariaChatRelay
             EventManager.Subscribers = new List<Clients.Interfaces.IChatClient>();
 
             // Clients auto subscribe to list.
-            new TestChatClient(EventManager.Subscribers);
+            // new TestChatClient(EventManager.Subscribers);
             new DiscordChatClient(EventManager.Subscribers);
 
             EventManager.ConnectClients();

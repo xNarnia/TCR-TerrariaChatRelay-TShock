@@ -21,15 +21,19 @@ namespace TerrariaChatRelay.Clients
 {
     public class DiscordChatClient : BaseClient
     {
-        private List<IChatClient> _parent { get; set; }
-        private const string GATEWAY_URL = "wss://gateway.discord.gg/?v=6&encoding=json";
-        private const string API_URL = "https://discordapp.com/api/v6";
+        // URLs
+        public const string GATEWAY_URL = "wss://gateway.discord.gg/?v=6&encoding=json";
+        public const string API_URL = "https://discordapp.com/api/v6";
+
+        // Discord Variables
         private string BOT_TOKEN = TerrariaChatRelay.Config["DiscordBotToken"];
         private string CHANNEL_ID = TerrariaChatRelay.Config["DiscordChannelId"];
+
+        private List<IChatClient> _parent { get; set; }
         private SimpleSocket Socket;
         private int? LastSequenceNumber = 0;
         private System.Timers.Timer heartbeatTimer;
-        private bool debug = true;
+        private bool debug = false;
 
         public DiscordChatClient(List<IChatClient> _parent) 
             : base(_parent) { }
