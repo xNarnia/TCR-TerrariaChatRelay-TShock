@@ -33,7 +33,7 @@ namespace TerrariaChatRelay.Clients
         private SimpleSocket Socket;
         private int? LastSequenceNumber = 0;
         private System.Timers.Timer heartbeatTimer;
-        private bool debug = false;
+        private bool debug = true;
 
         public DiscordChatClient(List<IChatClient> _parent) 
             : base(_parent) { }

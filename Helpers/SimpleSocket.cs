@@ -90,14 +90,17 @@ namespace TerrariaChatRelay.Helpers
 
             var MessageReceivedListener = Task.Run(async () =>
             {
-                ArraySegment<Byte> receiveBuffer = WebSocket.CreateClientBuffer(1024, 1024);
+                byte[] buffer = new byte[1024];
+                ArraySegment<Byte> receiveBuffer = new ArraySegment<byte>(buffer);
 
                 try
                 {
                     while (SocketOpen())
                     {
                         WebSocketReceiveResult result = null;
-                        result = await WebSocketClient.ReceiveAsync(receiveBuffer, token);
+                        Console.WriteLine($"SocketState: {WebSocketClient.State.ToString()}");
+                        Console.WriteLine($"TokenState: {token.IsCancellationRequested.ToString()}");
+                        result = await WebSocketClient.ReceiveAsync(receiveBuffer, token).ConfigureAwait(false);
                         var i = result.Count;
 
                         //Console.WriteLine("Receiving data...");
@@ -119,13 +122,12 @@ namespace TerrariaChatRelay.Helpers
 
                         await Task.Delay(50);
                     }
-
-
-                    Console.WriteLine($"Connection State: " + WebSocketClient.State.ToString());
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
+                    Console.WriteLine($"Connection State: " + WebSocketClient.State.ToString());
+                    Console.WriteLine($"TokenState: {token.IsCancellationRequested.ToString()}");
                 }
             });
 
