@@ -21,9 +21,16 @@ namespace TerrariaChatRelay
         public static event EventHandler<TerrariaChatEventArgs> OnGameMessageReceived;
         public static event EventHandler<TerrariaChatEventArgs> OnGameMessageSent;
 
+        /// <summary>
+        /// Emits a message to all subscribers that a game message has been received.
+        /// </summary>
+        /// <param name="sender">Object that is emitting this event.</param>
+        /// <param name="playerId">Id of player in respect to Main.Player[i], where i is the index of the player.</param>
+        /// <param name="color">Color to display the text.</param>
+        /// <param name="msg">Text content of the message</param>
         public static void RaiseTerrariaMessageReceived(object sender, int playerId, Color color, string msg)
         {
-            OnGameMessageReceived(sender, new TerrariaChatEventArgs(playerId, color, msg));
+            OnGameMessageReceived?.Invoke(sender, new TerrariaChatEventArgs(playerId, color, msg));
         }
 
         public static void ConnectClients()

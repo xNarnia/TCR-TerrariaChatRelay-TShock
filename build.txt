@@ -4,6 +4,6 @@ displayName = TCR-TerrariaChatRelay
 includePDB=true
 includeSource=true
 languageVersion=6
-dllReferences = System.Net.Http
+dllReferences = System.Net.Http, websocket-sharp
 modReferences = TerrariaHooks
 side = Server

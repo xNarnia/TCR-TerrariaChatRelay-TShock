@@ -10,6 +10,7 @@ namespace TerrariaChatRelay.Clients
     public abstract class BaseClient : IChatClient
     {
         private List<IChatClient> _parent;
+        private bool _disposed;
 
         /// <summary>
         /// Base class for IChatClients. Registers self into static ClientRepo.
@@ -17,6 +18,7 @@ namespace TerrariaChatRelay.Clients
         /// <param name="parent"></param>
         public BaseClient(List<IChatClient> parent)
         {
+            _disposed = false;
             Init(parent);
         }
 
@@ -48,6 +50,10 @@ namespace TerrariaChatRelay.Clients
         /// </summary>
         public void Dispose()
         {
+            if (_disposed)
+                return;
+            _disposed = true;
+
             _parent.Remove(this);
             EventManager.OnGameMessageReceived -= GameMessageReceivedHandler;
             EventManager.OnGameMessageSent -= GameMessageSentHandler;

@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TerrariaChatRelay</RootNamespace>
     <AssemblyName>TerrariaChatRelay</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile>
@@ -50,7 +50,6 @@
     <Compile Include="Clients\Interfaces\IChatClient.cs" />
     <Compile Include="Clients\TestChatClient.cs" />
     <Compile Include="Helpers\SimpleConfig.cs" />
-    <Compile Include="Helpers\SimpleSocket.cs" />
     <Compile Include="TCRConfig.cs" />
     <Compile Include="TerrariaChatRelay.cs" />
   </ItemGroup>
@@ -85,10 +84,15 @@
     <Reference Include="TerrariaHooks">
       <HintPath>lib\TerrariaHooks.dll</HintPath>
     </Reference>
+    <Reference Include="websocket-sharp, Version=1.0.2.59611, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSocketSharp.1.0.3-rc11\lib\websocket-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>"C:\Program Files (x86)\Steam\steamapps\common\terraria\tModLoaderServer.exe" -build "$(ProjectDir)\" -eac "$(TargetPath)"</PostBuildEvent>
