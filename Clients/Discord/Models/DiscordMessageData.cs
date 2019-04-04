@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TerrariaChatRelay.Clients.Models.Discord.JSON
+namespace TerrariaChatRelay.Clients.Discord.Models
 {
     public class DiscordMessageData
     {

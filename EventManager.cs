@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Terraria.UI.Chat;
 using TerrariaChatRelay.Clients.Interfaces;
 
 namespace TerrariaChatRelay
@@ -30,7 +31,15 @@ namespace TerrariaChatRelay
         /// <param name="msg">Text content of the message</param>
         public static void RaiseTerrariaMessageReceived(object sender, int playerId, Color color, string msg)
         {
-            OnGameMessageReceived?.Invoke(sender, new TerrariaChatEventArgs(playerId, color, msg));
+            var snippets = ChatManager.ParseMessage(msg, color);
+
+            string outmsg = "";
+            foreach (var snippet in snippets)
+            {
+                outmsg += snippet.Text;
+            }
+
+            OnGameMessageReceived?.Invoke(sender, new TerrariaChatEventArgs(playerId, color, outmsg));
         }
 
         public static void ConnectClients()

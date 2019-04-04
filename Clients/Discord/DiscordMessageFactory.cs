@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TerrariaChatRelay.Clients.Models.Discord.JSON;
+using TerrariaChatRelay.Clients.Discord.Models;
 
-namespace TerrariaChatRelay.Clients.Models.Discord
+namespace TerrariaChatRelay.Clients.Discord
 {
     public class DiscordMessageFactory
     {

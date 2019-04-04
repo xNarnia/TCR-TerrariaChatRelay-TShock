@@ -38,10 +38,12 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Clients\Models\Discord\JSON\DiscordMessageData.cs" />
-    <Compile Include="Clients\Models\Discord\DiscordGatewayOpcode.cs" />
-    <Compile Include="Clients\Models\Discord\JSON\DiscordMessage.cs" />
-    <Compile Include="Clients\Models\Discord\DiscordMessageFactory.cs" />
+    <Compile Include="Clients\Discord\DiscordChatParser.cs" />
+    <Compile Include="Clients\Discord\DiscordConfig.cs" />
+    <Compile Include="Clients\Discord\Models\DiscordMessageData.cs" />
+    <Compile Include="Clients\Discord\DiscordGatewayOpcode.cs" />
+    <Compile Include="Clients\Discord\Models\DiscordMessage.cs" />
+    <Compile Include="Clients\Discord\DiscordMessageFactory.cs" />
     <Compile Include="EventManager.cs" />
     <Compile Include="Clients\BaseClient.cs" />
     <Compile Include="Clients\DiscordChatClient.cs" />
@@ -49,7 +51,9 @@
     <Compile Include="Clients\Interfaces\IHandlesEmotes.cs" />
     <Compile Include="Clients\Interfaces\IChatClient.cs" />
     <Compile Include="Clients\TestChatClient.cs" />
+    <Compile Include="Helpers\NetHelpers.cs" />
     <Compile Include="Helpers\SimpleConfig.cs" />
+    <Compile Include="Helpers\SimpleRequest.cs" />
     <Compile Include="TCRConfig.cs" />
     <Compile Include="TerrariaChatRelay.cs" />
   </ItemGroup>

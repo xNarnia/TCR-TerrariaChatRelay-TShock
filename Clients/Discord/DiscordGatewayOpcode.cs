@@ -1,4 +1,4 @@
-﻿namespace TerrariaChatRelay.Clients.Models.Discord
+﻿namespace TerrariaChatRelay.Clients.Discord
 {
     public enum DiscordGatewayOpcode
     {

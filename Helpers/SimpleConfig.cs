@@ -8,97 +8,80 @@ using Terraria;
 
 namespace TerrariaChatRelay.Helpers
 {
-    public abstract class SimpleConfig : Dictionary<string, string>
+    public abstract class SimpleConfig<T> : ISimpleConfig where T : SimpleConfig<T>, new()
     {
-        public string ConfigId { get; }
-        public string FilePath { get; }
-        public bool IsNewConfig { get; }
+        [JsonIgnore]
+        public abstract string FileName { get; set; }
 
-        /// <summary>
-        /// <para>Base configuration class. </para>
-        /// Inherit this class, provide a constructor with an id, and override the DefaultData method. 
-        /// All you have to do from that point is instatiate your new config class to load it.
-        /// </summary>
-        /// <param name="configId"></param>
-        public SimpleConfig(string configId)
+        public string ToJson()
+            => JsonConvert.SerializeObject(this, Formatting.Indented);
+
+        public string ToJson(T config)
+            => JsonConvert.SerializeObject(config, Formatting.Indented);
+
+        public void SaveJson()
         {
-            ConfigId = configId;
-            FilePath = Path.Combine(Main.SavePath, "Mod Configs", ConfigId + ".json");
-            IsNewConfig = false;
-            LoadConfig(true);
+            string file = Path.Combine(AppContext.BaseDirectory, FileName);
+            File.WriteAllText(file, ToJson());
         }
 
-        /// <summary>
-        /// Returns the Default Dictionary to use when creating a new Configuration.
-        /// </summary>
-        /// <returns>Dictionary to use for new Configuration.</returns>
-        public abstract Dictionary<string, string> DefaultData();
-
-        /// <summary>
-        /// Loads the config if found in Mod Config. 
-        /// If the config isn't found, creates a new config in "Mod Config" folder if CreateNewIfNotFound is set to true.
-        /// </summary>
-        /// <param name="CreateNewIfNotFound">Whether to create a new config or not if the config isn't found.</param>
-        public void LoadConfig(bool CreateNewIfNotFound)
+        public void SaveJson(T config)
         {
-            if (ConfigExists())
-            {
-                using (StreamReader reader = new StreamReader(FilePath))
-                {
-                    string json = reader.ReadToEnd();
-
-                    var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-                    Clear();
-
-                    foreach (var key in data)
-                    {
-                        Add(key.Key, key.Value);
-                    }
-                }
-                Console.WriteLine($"Config loaded - {ConfigId}");
-            }
-            else if (CreateNewIfNotFound)
-            {
-                CreateNewConfig();
-
-                foreach (var key in DefaultData())
-                {
-                    Add(key.Key, key.Value);
-                }
-                Console.WriteLine($"Config created - {ConfigId}");
-            }
+            string file = Path.Combine(AppContext.BaseDirectory, FileName);
+            File.WriteAllText(file, ToJson(config));
         }
 
-        /// <summary>
-        /// Creates a new JSON config file in Mod Config.
-        /// </summary>
-        public void CreateNewConfig()
-            => CreateConfigFromData(DefaultData());
-
-        /// <summary>
-        /// Saves the config in the Mod Config folder.
-        /// </summary>
-        public void SaveConfig()
-            => CreateConfigFromData(this);
-
-        /// <summary>
-        /// Creates a configuration using the specified Dictionary
-        /// </summary>
-        /// <param name="data">Data to make config with.</param>
-        private void CreateConfigFromData(Dictionary<string, string> data)
+        public virtual ISimpleConfig GetOrCreateConfiguration()
         {
-            using (StreamWriter file = File.CreateText(FilePath))
-            {
-                string json = JsonConvert.SerializeObject(data, Formatting.Indented);
-                file.Write(json);
-            }
+            string file = Path.Combine(AppContext.BaseDirectory, FileName);
+            T config;
+
+            if (!File.Exists(file))
+                config = CreateConfigurationAt(file);
+            else
+                config = GetConfigurationsAt(file);
+            SaveJson(config);
+
+            return config;
         }
 
-        /// <summary>
-        /// Checks if config is present in Mod Config folder.
-        /// </summary>
-        /// <returns>Whether config is present.</returns>
-        private bool ConfigExists()
-            => File.Exists(FilePath);
+        public bool Exists()
+        {
+            string file = Path.Combine(AppContext.BaseDirectory, FileName);
+            return File.Exists(file);
+        }
+
+        public static T LoadConfigFile()
+        {
+            return new T().GetOrCreateConfiguration() as T;
+        }
+
+        private T GetConfigurationsAt(string file)
+        {
+            var config = JsonConvert.DeserializeObject<T>(File.ReadAllText(file));
+            return config;
+        }
+
+        private T CreateConfigurationAt(string file)
+        {
+            string path = Path.GetDirectoryName(file);
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
+            SaveJson();
+            return this as T;
+        }
+    }
+
+    public interface ISimpleConfig
+    {
+        // Variables
+        string FileName { get; set; }
+
+        // Methods
+        string ToJson();
+        void SaveJson();
+        bool Exists();
+        ISimpleConfig GetOrCreateConfiguration();
     }
 }

@@ -1,6 +1,7 @@
 author = Panini
-version = 0.1
+version = 0.6.0.4
 displayName = TCR-TerrariaChatRelay
+homepage = https://forums.terraria.org/index.php?threads/tcr-terrariachatrelay.78196/
 includePDB=true
 includeSource=true
 languageVersion=6
