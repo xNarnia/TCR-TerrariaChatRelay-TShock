@@ -12,6 +12,9 @@ namespace TerrariaChatRelay.Clients.Discord
     {
         public string Comment { get; set; } = "Get a BOT_TOKEN from https://discordapp.com/developers/applications/";
         public bool EnableDiscord { get; set; } = false;
+        public string CommandPrefix { get; set; } = "!";
+        public bool FirstTimeMessageShown { get; set; } = false;
+        public bool AlwaysShowFirstTimeMessage { get; set; } = false;
         public List<Endpoint> EndPoints { get; set; } = new List<Endpoint>();
     }
 

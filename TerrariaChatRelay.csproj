@@ -40,6 +40,7 @@
   <ItemGroup>
     <Compile Include="Clients\Discord\DiscordChatParser.cs" />
     <Compile Include="Clients\Discord\DiscordConfig.cs" />
+    <Compile Include="Clients\Discord\DiscordMessageQueue.cs" />
     <Compile Include="Clients\Discord\Models\DiscordMessageData.cs" />
     <Compile Include="Clients\Discord\DiscordGatewayOpcode.cs" />
     <Compile Include="Clients\Discord\Models\DiscordMessage.cs" />

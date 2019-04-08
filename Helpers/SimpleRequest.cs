@@ -14,7 +14,6 @@ namespace TerrariaChatRelay.Helpers
         //public static HttpWebRequest CreateRequest(string uri)
         //=> CreateRequest(new Uri(uri));
 
-
         /// <summary>
         /// Generates a legacy POST request of type "application/json". Sends the JSON to the requested Uri,
         /// and returns the response.
@@ -60,7 +59,8 @@ namespace TerrariaChatRelay.Helpers
             webRequest.ContentType = contentType;
             webRequest.ContentLength = content.Length;
 
-            foreach(var header in headers.AllKeys)
+            // HttpWebRequest.CreateHttp adds it's own keys. Instead of overwriting them, we'll add onto them.
+            foreach (var header in headers.AllKeys)
             {
                 webRequest.Headers.Add($"{header}: {headers[header]}");
             }

@@ -16,9 +16,6 @@ namespace TerrariaChatRelay
         /// </summary>
         public static List<IChatClient> Subscribers { get; set; }
 
-        // Implement these once mod can successfully send messages to Discord
-        //public static event EventHandler<ServiceChatEventArgs> OnServiceMessageReceived;
-        //public static event EventHandler<ServiceChatEventArgs> OnServiceMessageSent;
         public static event EventHandler<TerrariaChatEventArgs> OnGameMessageReceived;
         public static event EventHandler<TerrariaChatEventArgs> OnGameMessageSent;
 

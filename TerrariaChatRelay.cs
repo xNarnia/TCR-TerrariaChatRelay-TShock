@@ -1,18 +1,19 @@
 using Microsoft.Xna.Framework;
+using On.Terraria.GameContent.NetModules;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using Terraria;
+using Terraria.Chat;
 using Terraria.Localization;
 using Terraria.ModLoader;
-using TerrariaChatRelay.Clients;
-using On.Terraria.GameContent.NetModules;
-using Terraria.Chat;
-using Terraria.UI.Chat;
 using Terraria.Net;
-using System.Net;
+using Terraria.UI.Chat;
+using TerrariaChatRelay.Clients;
 
 namespace TerrariaChatRelay
 {
-	public class TerrariaChatRelay : Mod
+    public class TerrariaChatRelay : Mod
     {
         public static TCRConfig Config { get; set; }
 
@@ -84,6 +85,17 @@ namespace TerrariaChatRelay
                 EventManager.RaiseTerrariaMessageReceived(this, senderPlayerId, Color.White, message.Text);
 
             ChatManager.Commands.ProcessReceivedMessage(message, senderPlayerId);
+
+            return false;
+        }
+
+        public override bool HijackGetData(ref byte messageType, ref BinaryReader reader, int playerNumber)
+        {
+            if (messageType == 12)
+            {
+                NetPacket packet = Terraria.GameContent.NetModules.NetTextModule.SerializeServerMessage(NetworkText.FromLiteral("This chat is powered by TerrariaChatRelay"), Color.LawnGreen, byte.MaxValue);
+                NetManager.Instance.SendToClient(packet, playerNumber);
+            }
 
             return false;
         }
