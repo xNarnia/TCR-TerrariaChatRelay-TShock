@@ -21,19 +21,19 @@ namespace TerrariaChatRelay.Helpers
 
         public void SaveJson()
         {
-            string file = Path.Combine(AppContext.BaseDirectory, FileName);
+            string file = Path.Combine(Main.SavePath, FileName);
             File.WriteAllText(file, ToJson());
         }
 
         public void SaveJson(T config)
         {
-            string file = Path.Combine(AppContext.BaseDirectory, FileName);
+            string file = Path.Combine(Main.SavePath, FileName);
             File.WriteAllText(file, ToJson(config));
         }
 
         public virtual ISimpleConfig GetOrCreateConfiguration()
         {
-            string file = Path.Combine(AppContext.BaseDirectory, FileName);
+            string file = Path.Combine(Main.SavePath, FileName);
             T config;
 
             if (!File.Exists(file))
@@ -47,7 +47,7 @@ namespace TerrariaChatRelay.Helpers
 
         public bool Exists()
         {
-            string file = Path.Combine(AppContext.BaseDirectory, FileName);
+            string file = Path.Combine(Main.SavePath, FileName);
             return File.Exists(file);
         }
 
