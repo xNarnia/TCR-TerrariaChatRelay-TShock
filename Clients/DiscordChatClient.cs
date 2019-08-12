@@ -20,6 +20,7 @@ using Terraria.Net;
 using System.Text.RegularExpressions;
 using Terraria.ModLoader.IO;
 using Terraria.UI.Chat;
+using Terraria.ModLoader;
 
 namespace TerrariaChatRelay.Clients
 {
@@ -302,7 +303,13 @@ namespace TerrariaChatRelay.Clients
                 }
             }
 
-            switch (message)
+			if (message.StartsWith("cmd "))
+			{
+				message = message.Replace("cmd ", "");
+				//Main.ExecuteCommand(message, new TCRCommandCaller());
+			}
+
+			switch (message)
             {
                 case "info":
                     messageQueue.QueueMessage(chatmsg.ChannelId,
@@ -322,8 +329,24 @@ namespace TerrariaChatRelay.Clients
                         $"**World:** {Main.worldName}\n```\nDifficulty: {(Main.expertMode == false ? "Normal" : "Expert")}\nHardmode: {(Main.hardMode == false ? "No" : "Yes")}\nEvil Type: {(WorldGen.crimson == false ? "Corruption" : "Crimson")}```");
                     return true;
                 default:
-                    return false;
+					return false;
             }
         }
-    }
+
+		private class TCRCommandCaller : CommandCaller
+		{
+			public CommandType CommandType => CommandType.Console;
+
+			public Player Player => null;
+
+			public void Reply(string text, Color color = default(Color))
+			{
+				string[] array = text.Split('\n');
+				foreach (string value in array)
+				{
+					EventManager.RaiseTerrariaMessageReceived(null, -1, Color.Aqua, value);
+				}
+			}
+		}
+	}
 }
