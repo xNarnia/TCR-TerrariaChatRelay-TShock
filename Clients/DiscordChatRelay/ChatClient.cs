@@ -11,20 +11,17 @@ using TerrariaChatRelay.Helpers;
 using Newtonsoft.Json;
 using TerrariaChatRelay.Clients.Discord;
 using Newtonsoft.Json.Linq;
-using Terraria;
-using Terraria.Localization;
-using Microsoft.Xna.Framework;
 using System.Net;
 using WebSocketSharp;
-using Terraria.Net;
+using DiscordChatRelay.Helpers;
 using System.Text.RegularExpressions;
-using Terraria.ModLoader.IO;
-using Terraria.UI.Chat;
-using Terraria.ModLoader;
+using TerrariaChatRelay.Clients;
+using TerrariaChatRelay;
+using DiscordChatRelay.Models;
 
-namespace TerrariaChatRelay.Clients
+namespace DiscordChatRelay
 {
-    public class DiscordChatClient : BaseClient
+    public class ChatClient : BaseClient
     {
         public const string GATEWAY_URL = "wss://gateway.discord.gg/?v=6&encoding=json";
         public const string API_URL = "https://discordapp.com/api/v6";
@@ -33,7 +30,7 @@ namespace TerrariaChatRelay.Clients
         public List<ulong> Channel_IDs { get; set; }
         private string BOT_TOKEN;
         private int? LastSequenceNumber = 0;
-        private DiscordChatParser chatParser { get; set; }
+        private ChatParser chatParser { get; set; }
         private System.Timers.Timer heartbeatTimer { get; set; }
 
         // Message Queue
@@ -42,18 +39,19 @@ namespace TerrariaChatRelay.Clients
         private bool queueing { get; set; }
 
         // TCR Variables
-        private List<IChatClient> _parent { get; set; }
+        private List<IChatClient> parent { get; set; }
         private WebSocket Socket;
         private int errorCounter;
 
         // Other
         private bool debug = false;
 
-        public DiscordChatClient(List<IChatClient> _parent, string bot_token, ulong[] channel_ids) 
+        public ChatClient(List<IChatClient> _parent, string bot_token, ulong[] channel_ids) 
             : base(_parent)
         {
+			parent = _parent;
             BOT_TOKEN = bot_token;
-            chatParser = new DiscordChatParser();
+            chatParser = new ChatParser();
             Channel_IDs = channel_ids.ToList();
 
             messageQueue = new DiscordMessageQueue(500);
@@ -83,17 +81,16 @@ namespace TerrariaChatRelay.Clients
         {
             if (BOT_TOKEN == "BOT_TOKEN" || Channel_IDs.Contains(0))
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("TerrariaChatRelay [Discord] - Please update your Mod Config. Mod reload required.");
+                PrettyPrint.Log("Discord", "Please update your Mod Config. Mod reload required.");
 
                 if (BOT_TOKEN == "BOT_TOKEN")
                     Console.WriteLine(" Invalid Token: BOT_TOKEN");
                 if (Channel_IDs.Contains(0))
                     Console.WriteLine(" Invalid Channel Id: 0");
 
-                Console.WriteLine("  Config path: " + TerrariaChatRelay.Config.FileName);
+                Console.WriteLine("  Config path: " + new Configuration().FileName);
                 Console.ResetColor();
-                this.Dispose();
+                Dispose();
                 return;
             }
 
@@ -103,23 +100,26 @@ namespace TerrariaChatRelay.Clients
             Socket.Compression = CompressionMethod.Deflate;
             Socket.OnOpen += (object sender, EventArgs e) =>
             {
+				PrettyPrint.Log("Discord", "Connection complete!");
                 Socket.Send(DiscordMessageFactory.CreateLogin(BOT_TOKEN));
             };
 
             Socket.OnMessage += Socket_OnDataReceived;
             Socket.OnMessage += Socket_OnHeartbeatReceived;
             Socket.OnError += Socket_OnError;
-            Socket.Connect();
+			if(!debug)
+				Socket.Log.Output = (_, __) => { };
+			Socket.Connect();
 
-            if(!TerrariaChatRelay.Config.Discord.FirstTimeMessageShown 
-                || TerrariaChatRelay.Config.Discord.AlwaysShowFirstTimeMessage)
+            if(!Main.Config.FirstTimeMessageShown 
+                || Main.Config.AlwaysShowFirstTimeMessage)
             {
                 messageQueue.QueueMessage(Channel_IDs,
-                    $"**This bot is powered by TerrariaChatRelay**\nUse {TerrariaChatRelay.Config.Discord.CommandPrefix}info for more commands!");
-                TerrariaChatRelay.Config.Discord.FirstTimeMessageShown = true;
-                TerrariaChatRelay.Config.SaveJson();
+                    $"**This bot is powered by TerrariaChatRelay**\nUse {Main.Config.CommandPrefix}info for more commands!");
+				Main.Config.FirstTimeMessageShown = true;
+				Main.Config.SaveJson();
             }
-        }
+		}
 
         /// <summary>
         /// Unsubscribes all WebSocket events, then releases all resources used by the WebSocket.
@@ -148,11 +148,10 @@ namespace TerrariaChatRelay.Clients
             if (json.Length <= 1)
                 return;
 
-            Discord.Models.DiscordMessage msg;
-            if (!DiscordMessageFactory.TryParseMessage(json, out msg))
+            if (!DiscordMessageFactory.TryParseMessage(json, out var msg))
                 return;
 
-            if (msg.OpCode == DiscordGatewayOpcode.Hello)
+            if (msg.OpCode == GatewayOpcode.Hello)
             {
                 if(heartbeatTimer != null)
                     heartbeatTimer.Dispose();
@@ -183,8 +182,7 @@ namespace TerrariaChatRelay.Clients
             if (debug)
                 Console.WriteLine("\n" + json + "\n");
 
-            Discord.Models.DiscordDispatchMessage msg;
-            if(!DiscordMessageFactory.TryParseDispatchMessage(json, out msg)) return;
+            if(!DiscordMessageFactory.TryParseDispatchMessage(json, out var msg)) return;
             LastSequenceNumber = msg.SequenceNumber;
 
             var chatmsg = msg.GetChatMessageData();
@@ -195,16 +193,15 @@ namespace TerrariaChatRelay.Clients
                     string msgout = chatmsg.Message;
 
                     // Lazy add commands until I take time to design a command service properly
-                    if (ExecuteCommand(chatmsg))
-                        return;
+                    //if (ExecuteCommand(chatmsg))
+                    //    return;
 
                     msgout = chatParser.ConvertUserIdsToNames(msgout, chatmsg.UsersMentioned);
                     msgout = chatParser.ShortenEmojisToName(msgout);
                     msgout = $"<{chatmsg.Author.Username}> {msgout}";
 
-                    NetHelpers.BroadcastChatMessageWithoutTCR(
-                        NetworkText.FromFormattable("[c/7489d8:Discord] - " + msgout),
-                        new Color(255, 255, 255), -1);
+                    NetHelpers.BroadcastChatMessageWithoutTCRFormattable(
+                        ("[c/7489d8:Discord] - " + msgout), -1);
 
                     if (Channel_IDs.Count > 1)
                     {
@@ -228,7 +225,12 @@ namespace TerrariaChatRelay.Clients
         private void Socket_OnError(object sender, WebSocketSharp.ErrorEventArgs e)
         {
             Disconnect();
-            Connect();
+
+			var restartClient = new ChatClient(parent, BOT_TOKEN, Channel_IDs.ToArray());
+			PrettyPrint.Log("Discord", "Client disconnected. Attempting to reconnect...");
+			restartClient.Connect();
+			parent.Add(restartClient);
+			Dispose();
         }
 
         public override void GameMessageReceivedHandler(object sender, TerrariaChatEventArgs msg)
@@ -237,15 +239,51 @@ namespace TerrariaChatRelay.Clients
                 return;
             try
             {
-                string PlayerName = "";
-                string Bold = "";
+				string outMsg = "";
+				string bossName = "";
 
-                if (msg.PlayerId != -1)
-                    PlayerName = "**" + Main.player[msg.PlayerId].name + ":** ";
-                else
-                    Bold = "**";
+				if (msg.Player == null && msg.Message.EndsWith(" has joined."))
+					outMsg = Configuration.PlayerLoggedInFormat;
+				else if (msg.Player == null && msg.Message.EndsWith(" has left."))
+					outMsg = Configuration.PlayerLoggedOutFormat;
+				else if (msg.Player != null)
+					outMsg = Configuration.PlayerChatFormat;
+				else if (msg.Player == null && msg.Message.EndsWith(" has awoken!"))
+					outMsg = Configuration.VanillaBossSpawned;
+				else if (msg.Player == null && msg.Message == "The server is starting!")
+					outMsg = Configuration.ServerStartingFormat;
+				else if (msg.Player == null && msg.Message == "The server is stopping!")
+					outMsg = Configuration.ServerStoppingFormat;
+				else if (msg.Player == null)
+					outMsg = Configuration.WorldEventFormat;
+				else if (msg.Player == null && msg.Message == "A new version of TCR is available!")
+					outMsg = ":desktop:  **%message%**";
+				else
+					outMsg = "%message%";
 
-                messageQueue.QueueMessage(Channel_IDs, PlayerName + Bold + msg.Message + Bold);
+				if (msg.Player != null)
+					outMsg = outMsg.Replace("%playername%", msg.Player.name);
+
+				if(msg.Message.EndsWith(" has awoken!"))
+				{
+					bossName = msg.Message.Replace(" has awoken!", "");
+					outMsg = outMsg.Replace("%bossname%", bossName);
+				}
+
+				if(msg.Player == null && (msg.Message.EndsWith(" has joined.") || msg.Message.EndsWith(" has left.")))
+				{
+					string playerName = msg.Message.Replace(" has joined.", "").Replace(" has left.", "");
+
+					outMsg = outMsg.Replace("%playername%", playerName);
+				}
+
+				outMsg = outMsg.Replace("%worldname%", Terraria.Main.worldName);
+				outMsg = outMsg.Replace("%message%", msg.Message);
+
+				if (outMsg == "" || outMsg == null)
+					return;
+
+				messageQueue.QueueMessage(Channel_IDs, outMsg);
             }
             catch (Exception e)
             {
@@ -290,63 +328,63 @@ namespace TerrariaChatRelay.Clients
             return LastSequenceNumber;
         }
 
-        public bool ExecuteCommand(Discord.Models.DiscordMessageData chatmsg)
-        {
-            var message = chatmsg.Message;
-            var prefix = TerrariaChatRelay.Config.Discord.CommandPrefix;
+   //     public bool ExecuteCommand(MessageData chatmsg)
+   //     {
+   //         var message = chatmsg.Message;
+   //         var prefix = TCR.Config.Discord.CommandPrefix;
 
-            if (message.Length > 0)
-            {
-                if (message.StartsWith(prefix))
-                {
-                    message = message.Substring(prefix.Length, message.Length - 1);
-                }
-            }
+   //         if (message.Length > 0)
+   //         {
+   //             if (message.StartsWith(prefix))
+   //             {
+   //                 message = message.Substring(prefix.Length, message.Length - 1);
+   //             }
+   //         }
 
-			if (message.StartsWith("cmd "))
-			{
-				message = message.Replace("cmd ", "");
-				//Main.ExecuteCommand(message, new TCRCommandCaller());
-			}
+			//if (message.StartsWith("cmd "))
+			//{
+			//	message = message.Replace("cmd ", "");
+			//	//Main.ExecuteCommand(message, new TCRCommandCaller());
+			//}
 
-			switch (message)
-            {
-                case "info":
-                    messageQueue.QueueMessage(chatmsg.ChannelId,
-                        $"**Command List**\n```\n{prefix}playing - See who's online\n{prefix}world - See world information```");
-                    return true;
-                case "playing":
-                    var playersOnline = string.Join(", ", Main.player.Where(x => x.name.Length != 0).Select(x => x.name));
+			//switch (message)
+   //         {
+   //             case "info":
+   //                 messageQueue.QueueMessage(chatmsg.ChannelId,
+   //                     $"**Command List**\n```\n{prefix}playing - See who's online\n{prefix}world - See world information```");
+   //                 return true;
+   //             case "playing":
+   //                 var playersOnline = string.Join(", ", Main.player.Where(x => x.name.Length != 0).Select(x => x.name));
 
-                    if (playersOnline == "")
-                        playersOnline = "No players online!";
+   //                 if (playersOnline == "")
+   //                     playersOnline = "No players online!";
 
-                    messageQueue.QueueMessage(chatmsg.ChannelId,
-                        $"**Currently Playing:**\n```{playersOnline} ```");
-                    return true;
-                case "world":
-                    messageQueue.QueueMessage(chatmsg.ChannelId,
-                        $"**World:** {Main.worldName}\n```\nDifficulty: {(Main.expertMode == false ? "Normal" : "Expert")}\nHardmode: {(Main.hardMode == false ? "No" : "Yes")}\nEvil Type: {(WorldGen.crimson == false ? "Corruption" : "Crimson")}```");
-                    return true;
-                default:
-					return false;
-            }
-        }
+   //                 messageQueue.QueueMessage(chatmsg.ChannelId,
+   //                     $"**Currently Playing:**\n```{playersOnline} ```");
+   //                 return true;
+   //             case "world":
+   //                 messageQueue.QueueMessage(chatmsg.ChannelId,
+   //                     $"**World:** {Main.worldName}\n```\nDifficulty: {(Main.expertMode == false ? "Normal" : "Expert")}\nHardmode: {(Main.hardMode == false ? "No" : "Yes")}\nEvil Type: {(WorldGen.crimson == false ? "Corruption" : "Crimson")}```");
+   //                 return true;
+   //             default:
+			//		return false;
+   //         }
+   //     }
 
-		private class TCRCommandCaller : CommandCaller
-		{
-			public CommandType CommandType => CommandType.Console;
+		//private class TCRCommandCaller : CommandCaller
+		//{
+		//	public CommandType CommandType => CommandType.Console;
 
-			public Player Player => null;
+		//	public Player Player => null;
 
-			public void Reply(string text, Color color = default(Color))
-			{
-				string[] array = text.Split('\n');
-				foreach (string value in array)
-				{
-					EventManager.RaiseTerrariaMessageReceived(null, -1, Color.Aqua, value);
-				}
-			}
-		}
+		//	public void Reply(string text, Color color = default(Color))
+		//	{
+		//		string[] array = text.Split('\n');
+		//		foreach (string value in array)
+		//		{
+		//			EventManager.RaiseTerrariaMessageReceived(null, -1, Color.Aqua, value);
+		//		}
+		//	}
+		//}
 	}
 }

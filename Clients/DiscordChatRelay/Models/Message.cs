@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TerrariaChatRelay.Clients.Discord.Models
+namespace DiscordChatRelay.Models
 {
-    public class DiscordDispatchMessage : DiscordMessage
+    public class DispatchMessage : Message
     {
         /// <summary>
         /// Sequence number, used for resuming sessions and heartbeats. For more info, visit Discord API Docs -> Gateway -> Payloads.
@@ -26,11 +26,11 @@ namespace TerrariaChatRelay.Clients.Discord.Models
         /// Checks to see if the DispatchMessage has any associated Chat Message data. If not, it returns null.
         /// </summary>
         /// <returns>Data if it is present.</returns>
-        public DiscordMessageData GetChatMessageData()
+        public MessageData GetChatMessageData()
         {
             if(MessageType == "MESSAGE_CREATE")
             {
-                return ((JObject)Data).ToObject<DiscordMessageData>();
+                return ((JObject)Data).ToObject<MessageData>();
             }
             else
             {
@@ -39,13 +39,13 @@ namespace TerrariaChatRelay.Clients.Discord.Models
         }
     }
 
-    public class DiscordMessage
+    public class Message
     {
         /// <summary>
         /// Opcode for the payload. For more info, visit Discord API Docs -> Gateway -> Payloads.
         /// </summary>
         [JsonProperty("op")]
-        public DiscordGatewayOpcode OpCode { get; set; }
+        public GatewayOpcode OpCode { get; set; }
 
         /// <summary>
         /// Event data. A JSON value represented as a string. For more info, visit Discord API Docs -> Gateway -> Payloads.

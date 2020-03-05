@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TerrariaChatRelay.Clients.Discord.Models;
+using DiscordChatRelay.Models;
 
-namespace TerrariaChatRelay.Clients.Discord
+namespace DiscordChatRelay
 {
     public class DiscordMessageFactory
     {
@@ -47,11 +47,11 @@ namespace TerrariaChatRelay.Clients.Discord
         /// </summary>
         /// <param name="json">JSON string to attempt to parse into a DiscordMessage.</param>
         /// <returns>Equivalent DiscordMessage</returns>
-        public static bool TryParseMessage(string json, out DiscordMessage msg)
+        public static bool TryParseMessage(string json, out Message msg)
         {
             try
             {
-                msg =  JsonConvert.DeserializeObject<DiscordMessage>(json);
+                msg =  JsonConvert.DeserializeObject<Message>(json);
                 return true;
             }
             catch(JsonSerializationException e)
@@ -66,15 +66,15 @@ namespace TerrariaChatRelay.Clients.Discord
         /// </summary>
         /// <param name="json">JSON string to attempt to parse into a DiscordDispatchMessage.</param>
         /// <returns>Equivalent DiscordDispatchMessage</returns>
-        public static bool TryParseDispatchMessage(string json, out DiscordDispatchMessage msg)
+        public static bool TryParseDispatchMessage(string json, out DispatchMessage msg)
         {
             try
             {
-                var rawmsg = JsonConvert.DeserializeObject<DiscordMessage>(json);
+                var rawmsg = JsonConvert.DeserializeObject<Message>(json);
 
                 if (rawmsg.OpCode == 0)
                 {
-                    msg = JsonConvert.DeserializeObject<DiscordDispatchMessage>(json);
+                    msg = JsonConvert.DeserializeObject<DispatchMessage>(json);
                     return true;
                 }
 

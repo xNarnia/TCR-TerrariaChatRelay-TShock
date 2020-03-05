@@ -1,6 +1,6 @@
-﻿namespace TerrariaChatRelay.Clients.Discord
+﻿namespace DiscordChatRelay
 {
-    public enum DiscordGatewayOpcode
+    public enum GatewayOpcode
     {
         Dispatch = 0,
         Heartbeat = 1,

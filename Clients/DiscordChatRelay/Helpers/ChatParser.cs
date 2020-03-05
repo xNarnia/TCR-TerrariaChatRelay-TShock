@@ -1,30 +1,27 @@
-﻿using Microsoft.Xna.Framework;
+﻿using DiscordChatRelay.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Terraria;
 
-namespace TerrariaChatRelay.Clients.Discord
+namespace DiscordChatRelay.Helpers
 {
-    public class DiscordChatParser
+    public class ChatParser
     {
         Regex specialFinder { get; }
 
-        public DiscordChatParser()
+        public ChatParser()
         {
             specialFinder = new Regex(@":[^:\s]*(?:::[^:\s]*)*>");
         }
 
-        public string ConvertUserIdsToNames(string chatMessage, List<Models.DiscordUser> users)
+        public string ConvertUserIdsToNames(string chatMessage, List<User> users)
         {
-            var CyanColor = Color.Cyan.Hex3();
-
             foreach (var user in users)
             {
-                chatMessage = chatMessage.Replace($"<@{user.Id}>", $"[c/{CyanColor}:@" + user.Username.Replace("[", "").Replace("]", "") + "]");
+                chatMessage = chatMessage.Replace($"<@{user.Id}>", $"[c/00FFFF:@" + user.Username.Replace("[", "").Replace("]", "") + "]");
             }
 
             return chatMessage;

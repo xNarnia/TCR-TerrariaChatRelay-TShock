@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TerrariaChatRelay.Clients.Discord.Models
+namespace DiscordChatRelay.Models
 {
-    public class DiscordMessageData
+    public class MessageData
     {
         [JsonProperty("id")]
         public ulong Id { get; set; }
@@ -25,13 +25,13 @@ namespace TerrariaChatRelay.Clients.Discord.Models
         public DateTime TimeStamp { get; set; }
 
         [JsonProperty("author")]
-        public DiscordUser Author { get; set; }
+        public User Author { get; set; }
 
         [JsonProperty("content")]
         public string Message { get; set; }
 
         [JsonProperty("mentions")]
-        public List<DiscordUser> UsersMentioned { get; set; }
+        public List<User> UsersMentioned { get; set; }
 
         [JsonProperty("mention_roles")]
         public List<ulong> RolesMentoned { get; set; }
@@ -44,23 +44,5 @@ namespace TerrariaChatRelay.Clients.Discord.Models
 
         [JsonProperty("pinned")]
         public bool IsPinned { get; set; }
-    }
-
-    public class DiscordUser
-    {
-        [JsonProperty("id")]
-        public ulong Id { get; set; }
-
-        [JsonProperty("username")]
-        public string Username { get; set; }
-
-        [JsonProperty("discriminator")]
-        public string Discriminator { get; set; }
-
-        [JsonProperty("avatar")]
-        public string Avatar { get; set; }
-
-        [JsonProperty("bot")]
-        public bool IsBot { get; set; } = false;
     }
 }

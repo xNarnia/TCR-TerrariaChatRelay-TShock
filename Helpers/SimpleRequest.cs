@@ -79,7 +79,7 @@ namespace TerrariaChatRelay.Helpers
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+				PrettyPrint.Log(e.Message);
             }
 
             return null;

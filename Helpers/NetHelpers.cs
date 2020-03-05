@@ -12,10 +12,21 @@ namespace TerrariaChatRelay.Helpers
 {
     public static class NetHelpers
     {
-        public static void BroadcastChatMessageWithoutTCR(NetworkText text, Color color, int excludedPlayer)
+        public static void BroadcastChatMessageWithoutTCRFormattable(string text, int excludedPlayer)
         {
-            NetPacket packet = Terraria.GameContent.NetModules.NetTextModule.SerializeServerMessage(text, color, byte.MaxValue);
+            NetPacket packet = 
+				Terraria.GameContent.NetModules.NetTextModule.SerializeServerMessage(
+					NetworkText.FromFormattable(text), new Color(255, 255, 255), byte.MaxValue);
             NetManager.Instance.Broadcast(packet, excludedPlayer);
         }
-    }
+
+
+		public static void BroadcastChatMessageWithoutTCRLiteral(string text, int excludedPlayer)
+		{
+			NetPacket packet = 
+				Terraria.GameContent.NetModules.NetTextModule.SerializeServerMessage(
+					NetworkText.FromLiteral(text), new Color(255, 255, 255), byte.MaxValue);
+			NetManager.Instance.Broadcast(packet, excludedPlayer);
+		}
+	}
 }

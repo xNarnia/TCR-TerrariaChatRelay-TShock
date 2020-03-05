@@ -1,9 +1,10 @@
 author = Panini
-version = 0.7.2
+version = 0.9.0
 displayName = TCR-TerrariaChatRelay
 homepage = https://forums.terraria.org/index.php?threads/tcr-terrariachatrelay.78196/
-includePDB=true
-includeSource=true
+includePDB=false
+includeSource=false
 languageVersion=6
 dllReferences = System.Net.Http, websocket-sharp
+buildIgnore=.git/,.vs/,.bin/,app.config,TerrariaChatRelay.csproj.user
 side = Server
