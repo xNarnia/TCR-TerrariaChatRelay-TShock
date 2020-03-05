@@ -134,7 +134,7 @@ namespace TerrariaChatRelay
 				if (Global.Config.ShowServerStartMessage)
 					EventManager.RaiseTerrariaMessageReceived(this, -1, "The server is starting!");
 
-				if(LatestVersion >= Version)
+				if(LatestVersion > Version)
 					EventManager.RaiseTerrariaMessageReceived(this, -1, "A new version of TCR is available!");
 			}
 

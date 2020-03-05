@@ -1,5 +1,5 @@
 author = Panini
-version = 0.9.0
+version = 0.9.1
 displayName = TCR-TerrariaChatRelay
 homepage = https://forums.terraria.org/index.php?threads/tcr-terrariachatrelay.78196/
 includePDB=false
