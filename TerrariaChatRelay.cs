@@ -74,6 +74,7 @@ namespace TerrariaChatRelay
 		/// </summary>
 		public async Task GetLatestVersionNumber()
 		{
+			ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 			var http = HttpWebRequest.CreateHttp("https://raw.githubusercontent.com/xPanini/TCR-TerrariaChatRelay/master/build.txt");
 
 			WebResponse res = null;
@@ -103,7 +104,7 @@ namespace TerrariaChatRelay
 
 							LatestVersion = new Version(line);
 							if (LatestVersion > Version)
-								PrettyPrint.Log($"A new version of TCR is available: {LatestVersion.ToString()}");
+								PrettyPrint.Log($"A new version of TCR is available: V.{LatestVersion.ToString()}");
 
 							line = null;
 						}
@@ -135,7 +136,7 @@ namespace TerrariaChatRelay
 					EventManager.RaiseTerrariaMessageReceived(this, -1, "The server is starting!");
 
 				if(LatestVersion > Version)
-					EventManager.RaiseTerrariaMessageReceived(this, -1, "A new version of TCR is available!");
+					EventManager.RaiseTerrariaMessageReceived(this, -1, $"A new version of TCR is available: V.{LatestVersion.ToString()}");
 			}
 
 			return orig(reader);

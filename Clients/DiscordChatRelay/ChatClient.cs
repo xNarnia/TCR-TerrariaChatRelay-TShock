@@ -256,7 +256,7 @@ namespace DiscordChatRelay
 					outMsg = Configuration.ServerStoppingFormat;
 				else if (msg.Player == null)
 					outMsg = Configuration.WorldEventFormat;
-				else if (msg.Player == null && msg.Message == "A new version of TCR is available!")
+				else if (msg.Player == null && msg.Message.Contains("A new version of TCR is available!"))
 					outMsg = ":desktop:  **%message%**";
 				else
 					outMsg = "%message%";
