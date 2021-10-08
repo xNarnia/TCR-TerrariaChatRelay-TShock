@@ -1,4 +1,4 @@
-# TCR-TerrariaChatRelay-TShock Port
+# TCR-TerrariaChatRelay
 Self-serving Terraria Chat Relay with extensible chat service support.
 
 Please note that this Git will be merging with the TCR-TShock to become the "all-versions" Git, since the code base has been standardized across all platforms (TMod, TShock, TShock-Mobile).
