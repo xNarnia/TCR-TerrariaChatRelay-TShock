@@ -15,12 +15,15 @@ using TerrariaChatRelay;
 using Microsoft.Xna.Framework;
 using TerrariaChatRelay.Helpers;
 using System.Threading.Tasks;
+using TerrariaChatRelay.Command;
 
 namespace TerrariaChatRelay
 {
 	public class TerrariaChatRelay : Mod
 	{
 		public Version LatestVersion = new Version("0.0.0.0");
+		public string PlayerJoinEndingString;
+		public string PlayerLeaveEndingString;
 
 		public TerrariaChatRelay()
 		{
@@ -29,7 +32,7 @@ namespace TerrariaChatRelay
 		public override void Load()
 		{
 			base.Load();
-						
+
 			ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
 
 			Global.Config = (TCRConfig)new TCRConfig().GetOrCreateConfiguration();
@@ -39,9 +42,16 @@ namespace TerrariaChatRelay
 			On.Terraria.NetMessage.BroadcastChatMessage += NetMessage_BroadcastChatMessage;
 			On.Terraria.IO.WorldFile.LoadWorld_Version2 += OnWorldLoadStart;
 			On.Terraria.Netplay.StopListening += OnServerStop;
+			On.Terraria.NetMessage.SyncConnectedPlayer += OnPlayerJoin_NetMessage_SyncConnectedPlayer;
+			On.Terraria.RemoteClient.Reset += RemoteClient_Reset;
+
+			PlayerJoinEndingString = Language.GetText("LegacyMultiplayer.19").Value.Split(new string[] { "{0}" }, StringSplitOptions.None).Last();
+			PlayerLeaveEndingString = Language.GetText("LegacyMultiplayer.20").Value.Split(new string[] { "{0}" }, StringSplitOptions.None).Last();
 
 			// Add subscribers to list
-			EventManager.Initialize();
+			Core.Initialize();
+
+			((CommandService)Core.CommandServ).ScanForCommands(this);
 
 			// Clients auto subscribe to list.
 			//foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
@@ -56,16 +66,35 @@ namespace TerrariaChatRelay
 			//			// Get the constructor and create an instance of Config
 			//			ConstructorInfo constructor = type.GetConstructor(Type.EmptyTypes);
 			//			TCRPlugin plugin = (TCRPlugin)constructor.Invoke(new object[] { });
-			//			plugin.Init(EventManager.Subscribers);
+			//			plugin.Init(Core.Subscribers);
 			//		}
 			//	}
 			//}
-			new DiscordChatRelay.Main();
 
-			EventManager.ConnectClients();
+			Core.ConnectClients();
 
 			if (Global.Config.CheckForLatestVersion)
 				Task.Run(GetLatestVersionNumber);
+		}
+
+		private void RemoteClient_Reset(On.Terraria.RemoteClient.orig_Reset orig, RemoteClient self)
+		{
+			if (self.Id >= 0)
+			{
+				if(Main.player[self.Id].name != "")
+				{
+					var tcrPlayer = Main.player[self.Id].ToTCRPlayer(-1);
+					Core.RaiseTerrariaMessageReceived(this, tcrPlayer, $"{tcrPlayer.Name} has left.");
+				}
+			}
+			orig(self);
+		}
+
+		private void OnPlayerJoin_NetMessage_SyncConnectedPlayer(On.Terraria.NetMessage.orig_SyncConnectedPlayer orig, int plr)
+		{
+			orig(plr);
+			var tcrPlayer = Main.player[plr].ToTCRPlayer(-1);
+			Core.RaiseTerrariaMessageReceived(this, tcrPlayer, $"{tcrPlayer.Name} has joined.");
 		}
 
 		/// <summary>
@@ -78,10 +107,11 @@ namespace TerrariaChatRelay
 			var http = HttpWebRequest.CreateHttp("https://raw.githubusercontent.com/xPanini/TCR-TerrariaChatRelay/master/build.txt");
 
 			WebResponse res = null;
-			try { 
+			try
+			{
 				res = await http.GetResponseAsync();
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				return;
 			}
@@ -119,7 +149,7 @@ namespace TerrariaChatRelay
 		/// </summary>
 		public override void Unload()
 		{
-			EventManager.DisconnectClients();
+			Core.DisconnectClients();
 			NetTextModule.DeserializeAsServer -= NetTextModule_DeserializeAsServer;
 			On.Terraria.NetMessage.BroadcastChatMessage -= NetMessage_BroadcastChatMessage;
 			Global.Config = null;
@@ -133,10 +163,10 @@ namespace TerrariaChatRelay
 			if (!Netplay.disconnect)
 			{
 				if (Global.Config.ShowServerStartMessage)
-					EventManager.RaiseTerrariaMessageReceived(this, -1, "The server is starting!");
+					Core.RaiseTerrariaMessageReceived(this, TCRPlayer.Server, "The server is starting!");
 
-				if(LatestVersion > Version)
-					EventManager.RaiseTerrariaMessageReceived(this, -1, $"A new version of TCR is available: V.{LatestVersion.ToString()}");
+				if (LatestVersion > Version)
+					Core.RaiseTerrariaMessageReceived(this, TCRPlayer.Server, $"A new version of TCR is available: V.{LatestVersion.ToString()}");
 			}
 
 			return orig(reader);
@@ -148,7 +178,7 @@ namespace TerrariaChatRelay
 		private void OnServerStop(On.Terraria.Netplay.orig_StopListening orig)
 		{
 			if (Global.Config.ShowServerStopMessage)
-				EventManager.RaiseTerrariaMessageReceived(this, -1, "The server is stopping!");
+				Core.RaiseTerrariaMessageReceived(this, TCRPlayer.Server, "The server is stopping!");
 
 			orig();
 		}
@@ -158,8 +188,8 @@ namespace TerrariaChatRelay
 		/// </summary>
 		private void NetMessage_BroadcastChatMessage(On.Terraria.NetMessage.orig_BroadcastChatMessage orig, NetworkText text, Color color, int excludedPlayer)
 		{
-			if (Global.Config.ShowGameEvents)
-				EventManager.RaiseTerrariaMessageReceived(this, -1, text.ToString());
+			if (Global.Config.ShowGameEvents && !text.ToString().EndsWith(PlayerJoinEndingString) && !text.ToString().EndsWith(PlayerLeaveEndingString))
+				Core.RaiseTerrariaMessageReceived(this, (excludedPlayer > 0 ? Main.player[excludedPlayer].ToTCRPlayer(excludedPlayer) : TCRPlayer.Server), text.ToString());
 
 			orig(text, color, excludedPlayer);
 		}
@@ -173,7 +203,10 @@ namespace TerrariaChatRelay
 			ChatMessage message = ChatMessage.Deserialize(reader);
 
 			if (Global.Config.ShowChatMessages)
-				EventManager.RaiseTerrariaMessageReceived(this, senderPlayerId, message.Text);
+				Core.RaiseTerrariaMessageReceived(this, new TCRPlayer() { 
+					PlayerId = senderPlayerId,
+					Name = Main.player[senderPlayerId].name
+				}, message.Text);
 
 			reader.BaseStream.Position = savedPosition;
 			return orig(self, reader, senderPlayerId);
@@ -181,6 +214,11 @@ namespace TerrariaChatRelay
 
 		public override bool HijackGetData(ref byte messageType, ref BinaryReader reader, int playerNumber)
 		{
+			if (messageType == 56)
+			{
+
+			}
+
 			if (messageType == 12)
 			{
 				NetPacket packet = Terraria.GameContent.NetModules.NetTextModule.SerializeServerMessage(NetworkText.FromLiteral("This chat is powered by TerrariaChatRelay"), Color.LawnGreen, byte.MaxValue);
@@ -188,6 +226,17 @@ namespace TerrariaChatRelay
 			}
 
 			return false;
+		}
+	}
+	public static class Extensions
+	{
+		public static TCRPlayer ToTCRPlayer(this Player player, int id)
+		{
+			return new TCRPlayer()
+			{
+				PlayerId = id,
+				Name = player.name
+			};
 		}
 	}
 }

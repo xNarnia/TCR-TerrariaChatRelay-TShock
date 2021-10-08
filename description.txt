@@ -1,4 +1,4 @@
-TerrariaChatRelay - Beta 0.6
+TerrariaChatRelay - 1.0.2
 Supported Chat Services: Discord
 
 Allows you to re-route Terraria's chat to different places.
