@@ -49,27 +49,9 @@ namespace TerrariaChatRelay
 			PlayerLeaveEndingString = Language.GetText("LegacyMultiplayer.20").Value.Split(new string[] { "{0}" }, StringSplitOptions.None).Last();
 
 			// Add subscribers to list
-			Core.Initialize();
+			Core.Initialize(new tModLoaderAdapter());
 
 			((CommandService)Core.CommandServ).ScanForCommands(this);
-
-			// Clients auto subscribe to list.
-			//foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
-			//{
-			//	var OnLoadConfigAssemblies = asm.GetTypes()
-			//		.Where(type => !type.IsAbstract  && type.IsSubclassOf(typeof(TCRPlugin)));
-
-			//	if (OnLoadConfigAssemblies.Count() > 0)
-			//	{
-			//		foreach (Type type in OnLoadConfigAssemblies)
-			//		{
-			//			// Get the constructor and create an instance of Config
-			//			ConstructorInfo constructor = type.GetConstructor(Type.EmptyTypes);
-			//			TCRPlugin plugin = (TCRPlugin)constructor.Invoke(new object[] { });
-			//			plugin.Init(Core.Subscribers);
-			//		}
-			//	}
-			//}
 
 			Core.ConnectClients();
 
@@ -160,13 +142,20 @@ namespace TerrariaChatRelay
 		/// </summary>
 		private int OnWorldLoadStart(On.Terraria.IO.WorldFile.orig_LoadWorld_Version2 orig, BinaryReader reader)
 		{
-			if (!Netplay.disconnect)
+			try
 			{
-				if (Global.Config.ShowServerStartMessage)
-					Core.RaiseTerrariaMessageReceived(this, TCRPlayer.Server, "The server is starting!");
+				if (!Netplay.disconnect)
+				{
+					if (Global.Config.ShowServerStartMessage)
+						Core.RaiseTerrariaMessageReceived(this, TCRPlayer.Server, "The server is starting!");
 
-				if (LatestVersion > Version)
-					Core.RaiseTerrariaMessageReceived(this, TCRPlayer.Server, $"A new version of TCR is available: V.{LatestVersion.ToString()}");
+					if (LatestVersion > Version)
+						Core.RaiseTerrariaMessageReceived(this, TCRPlayer.Server, $"A new version of TCR is available: V.{LatestVersion.ToString()}");
+				}
+			}
+			catch(Exception e)
+			{
+				PrettyPrint.Log(e.Message, ConsoleColor.Red);
 			}
 
 			return orig(reader);
